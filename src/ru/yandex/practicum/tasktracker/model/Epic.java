@@ -1,4 +1,5 @@
 package ru.yandex.practicum.tasktracker.model;
+import ru.yandex.practicum.tasktracker.manager.TaskManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,28 +22,12 @@ public class Epic extends Task {
     }
 
     /**
-     * Обновляет статус эпика на основе перебора статусов его подзадач
+     * Обновляет статус эпика на основе перебора статусов его подзадач. Логика вынесена в статический метод
+     * getEpicStatusBySubtasks класса TaskManager, но сам метод принадлежит классу Epic, чтобы не открывать вовне доступ
+     * к установке значения статуса эпика.
      */
     public void renewStatus() {
-        if (subtasks.size() == 0) {
-            status = TaskStatus.NEW;
-        } else {
-            TaskStatus newStatus = null;
-            for (Integer key : subtasks.keySet()) {
-                TaskStatus subtaskStatus = subtasks.get(key).getStatus();
-                if (newStatus == null) { // Блок для присвоения переменной статуса первой подзадачи
-                    newStatus = subtaskStatus;
-                }
-                if (subtaskStatus == TaskStatus.IN_PROGRESS) {  // Если какая-либо подзадача IN_PROGRESS,
-                    newStatus = TaskStatus.IN_PROGRESS;         // то эпик автоматически IN_PROGRESS
-                    break;
-                } else if (subtaskStatus != newStatus) {        // Если подзадачи имеют разные статусы,
-                    newStatus = TaskStatus.IN_PROGRESS;          // то эпик автоматически IN_PROGRESS
-                    break;
-                }
-            }
-            status = newStatus; // Если статус всех подзадач был одинаков, присваиваем его эпику
-        }
+        status = TaskManager.getEpicStatusBySubtasks(subtasks);
     }
 
     /**

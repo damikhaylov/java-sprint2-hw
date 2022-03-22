@@ -1,8 +1,6 @@
 package ru.yandex.practicum.tasktracker.manager;
 
-import ru.yandex.practicum.tasktracker.model.Epic;
-import ru.yandex.practicum.tasktracker.model.Subtask;
-import ru.yandex.practicum.tasktracker.model.Task;
+import ru.yandex.practicum.tasktracker.model.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -181,6 +179,33 @@ public class TaskManager {
                     return;
                 }
             }
+        }
+    }
+
+    /**
+     * Возвращает статус для эпика, который содержал бы переданную в качестве аргумента коллекцию подзадач
+     * @param subtasks HashMap, содержащий подзадачи
+     * @return TaskStatus статус эпика, который содержал бы ереданную в качестве аргумента коллекцию подзадач
+     */
+    public static TaskStatus getEpicStatusBySubtasks(HashMap<Integer, Subtask> subtasks) {
+        if (subtasks.size() == 0) {
+            return TaskStatus.NEW;
+        } else {
+            TaskStatus newStatus = null;
+            for (Integer key : subtasks.keySet()) {
+                TaskStatus subtaskStatus = subtasks.get(key).getStatus();
+                if (newStatus == null) { // Блок для присвоения переменной статуса первой подзадачи
+                    newStatus = subtaskStatus;
+                }
+                if (subtaskStatus == TaskStatus.IN_PROGRESS) {  // Если какая-либо подзадача IN_PROGRESS,
+                    newStatus = TaskStatus.IN_PROGRESS;         // то эпик автоматически IN_PROGRESS
+                    break;
+                } else if (subtaskStatus != newStatus) {        // Если подзадачи имеют разные статусы,
+                    newStatus = TaskStatus.IN_PROGRESS;          // то эпик автоматически IN_PROGRESS
+                    break;
+                }
+            }
+            return newStatus; // Если статус всех подзадач был одинаков, присваиваем его эпику
         }
     }
 }
