@@ -1,4 +1,4 @@
-package ru.yandex.practicum.tasktracker;
+package ru.yandex.practicum.tasktracker.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;

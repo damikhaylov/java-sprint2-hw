@@ -1,4 +1,5 @@
-package ru.yandex.practicum.tasktracker;
+import ru.yandex.practicum.tasktracker.manager.TaskManager;
+import ru.yandex.practicum.tasktracker.model.*;
 
 public class Main {
     private static void printTaskLists(TaskManager taskManager) {
