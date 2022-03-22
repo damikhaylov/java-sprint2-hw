@@ -8,7 +8,6 @@ public class Subtask extends Task {
     public Subtask(int id, String name, TaskStatus status, String description, Epic epic) {
         super(id, name, status, description);
         this.epic = epic;
-        epic.renewStatus();
     }
 
     public Epic getEpic() {

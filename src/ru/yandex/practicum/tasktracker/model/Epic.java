@@ -1,4 +1,5 @@
 package ru.yandex.practicum.tasktracker.model;
+
 import ru.yandex.practicum.tasktracker.manager.TaskManager;
 
 import java.util.ArrayList;
@@ -24,10 +25,19 @@ public class Epic extends Task {
     /**
      * Обновляет статус эпика на основе перебора статусов его подзадач. Логика вынесена в статический метод
      * getEpicStatusBySubtasks класса TaskManager, но сам метод принадлежит классу Epic, чтобы не открывать вовне доступ
-     * к установке значения статуса эпика.
+     * к непосредственной установке значения статуса эпика.
      */
     public void renewStatus() {
         status = TaskManager.getEpicStatusBySubtasks(subtasks);
+    }
+
+    /**
+     * Возвращает все подзадачи эпика в виде HashMap
+     *
+     * @return HashMap c объектами Subtask в качестве значений и int идентификаторами подзадач в качестве ключей
+     */
+    public HashMap<Integer, Subtask> getSubtasksMap() {
+        return subtasks;
     }
 
     /**
@@ -35,66 +45,8 @@ public class Epic extends Task {
      *
      * @return ArrayList c объектами Subtask
      */
-    public ArrayList<Subtask> getSubtasks() {
+    public ArrayList<Subtask> getSubtasksList() {
         return new ArrayList<>(subtasks.values());
-    }
-
-    public void deleteAllSubtasks() {
-        subtasks.clear();
-        status = TaskStatus.NEW; // Для эпика без подзадач статус NEW
-    }
-
-    public Subtask getSubtaskById(int id) {
-        return subtasks.getOrDefault(id, null);
-    }
-
-    /**
-     * Добавляет новую подзадачу в эпик, если она не null и если getEpic() подзадачи совпадает с текущим эпиком
-     *
-     * @param subtask объект Subtask
-     * @return id подзадачи, если она добавлена и 0, если не добавлена
-     */
-    public int addSubtask(Subtask subtask) {
-        if (subtask != null && subtask.getEpic().equals(this)) {
-            subtasks.put(subtask.getId(), subtask);
-            renewStatus(); // Вызывается обновление статуса эпика в связи с изменением состава подзадач
-            return subtask.getId();
-        } else {
-            return 0;
-        }
-    }
-
-    /**
-     * Заменяет подзадачу в эпике, если новая подзадача не null, если она передаётся с id существующей подзадачи
-     * и если getEpic() подзадачи совпадает с текущим эпиком
-     *
-     * @param subtask объект Subtask
-     * @return true, если подзадача добавлена, false, если нет
-     */
-    public boolean replaceSubtask(Subtask subtask) {
-        if (subtask != null && subtask.getEpic() == this && subtasks.containsKey(subtask.getId())) {
-            subtasks.replace(subtask.getId(), subtask);
-            renewStatus(); // Вызывается обновление статуса эпика в связи с возможным изменением статуса подзадачи
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Удаляет подзадачу с заданным id
-     *
-     * @param id идентификатор подзадачи
-     * @return true, если подзадача удалена, false, если подзадача с заданным id отсутствует
-     */
-    public boolean deleteSubtaskById(int id) {
-        if (subtasks.containsKey(id)) {
-            subtasks.remove(id);
-            renewStatus(); // Вызывается обновление статуса эпика в связи с изменением состава подзадач
-            return true;
-        } else {
-            return false;
-        }
     }
 
     @Override
@@ -108,7 +60,7 @@ public class Epic extends Task {
         } else {
             result.append("description=null, ");
         }
-        result.append("subtasks=").append(subtasks.values());
+        result.append("subtasks=").append(getSubtasksMap().values());
         result.append('}');
         return result.toString();
     }
@@ -120,14 +72,14 @@ public class Epic extends Task {
         if (!super.equals(o)) return false;
         Epic epic = (Epic) o;
         return Objects.equals(getStatus(), epic.getStatus())
-                && Objects.equals(getSubtasks(), epic.getSubtasks());
+                && Objects.equals(getSubtasksMap(), epic.getSubtasksMap());
     }
 
     @Override
     public int hashCode() {
         int hash = super.hashCode();
         hash = 31 * hash + (getStatus() != null ? getStatus().hashCode() : 0);
-        hash = 31 * hash + (getSubtasks() != null ? getSubtasks().hashCode() : 0);
+        hash = 31 * hash + (getSubtasksMap() != null ? getSubtasksMap().hashCode() : 0);
         return hash;
     }
 }

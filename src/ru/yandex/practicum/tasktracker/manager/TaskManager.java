@@ -43,7 +43,7 @@ public class TaskManager {
     public ArrayList<Subtask> getSubtasks() {
         ArrayList<Subtask> allSubtasks = new ArrayList<>();
         for (Integer key : epics.keySet()) {
-            allSubtasks.addAll(epics.get(key).getSubtasks());
+            allSubtasks.addAll(epics.get(key).getSubtasksList());
         }
         return allSubtasks;
     }
@@ -67,7 +67,9 @@ public class TaskManager {
      */
     public void deleteAllSubtasks() {
         for (Integer key : epics.keySet()) {
-            epics.get(key).deleteAllSubtasks();
+            Epic epic = epics.get(key);
+            epic.getSubtasksMap().clear();
+            epic.renewStatus();
         }
     }
 
@@ -90,7 +92,7 @@ public class TaskManager {
      */
     public Subtask getSubtaskById(int id) {
         for (Integer key : epics.keySet()) {
-            Subtask desiredSubtask = epics.get(key).getSubtaskById(id);
+            Subtask desiredSubtask = epics.get(key).getSubtasksMap().getOrDefault(id, null);
             if (desiredSubtask != null) {
                 return desiredSubtask;
             }
@@ -113,7 +115,9 @@ public class TaskManager {
                 return task.getId();
             } else if (task.getClass() == Subtask.class) {
                 Subtask subtask = (Subtask) task;
-                return subtask.getEpic().addSubtask(subtask);
+                subtask.getEpic().getSubtasksMap().put(subtask.getId(), subtask);
+                subtask.getEpic().renewStatus();
+                return subtask.getId();
             } else {
                 tasks.put(task.getId(), task);
                 return task.getId();
@@ -159,7 +163,17 @@ public class TaskManager {
      * @return true, если подзадача добавлена, false, если нет
      */
     public boolean replaceSubtask(Subtask subtask) {
-        return subtask.getEpic().replaceSubtask(subtask);
+        if (subtask == null) {
+            return false;
+        }
+        Epic epic = subtask.getEpic();
+        if (epic.getSubtasksMap().containsKey(subtask.getId())) {
+            epic.getSubtasksMap().replace(subtask.getId(), subtask);
+            epic.renewStatus(); // Вызывается обновление статуса эпика в связи с возможным изменением статуса подзадачи
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -173,9 +187,11 @@ public class TaskManager {
         } else if (epics.containsKey(id)) {
             epics.remove(id);
         } else {
-            for (Integer i : epics.keySet()) {
-                boolean isDeletingFromCurrentEpic = epics.get(i).deleteSubtaskById(id);
-                if (isDeletingFromCurrentEpic) {
+            for (Integer key : epics.keySet()) {
+                Epic epic = epics.get(key);
+                if (epic.getSubtasksMap().containsKey(id)) {
+                    epic.getSubtasksMap().remove(id);
+                    epic.renewStatus(); // Вызывается обновление статуса эпика в связи с изменением состава подзадач
                     return;
                 }
             }
@@ -184,8 +200,9 @@ public class TaskManager {
 
     /**
      * Возвращает статус для эпика, который содержал бы переданную в качестве аргумента коллекцию подзадач
+     *
      * @param subtasks HashMap, содержащий подзадачи
-     * @return TaskStatus статус эпика, который содержал бы ереданную в качестве аргумента коллекцию подзадач
+     * @return TaskStatus статус эпика, который содержал бы переданную в качестве аргумента коллекцию подзадач
      */
     public static TaskStatus getEpicStatusBySubtasks(HashMap<Integer, Subtask> subtasks) {
         if (subtasks.size() == 0) {
