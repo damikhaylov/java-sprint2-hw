@@ -8,6 +8,8 @@ import java.util.ArrayList;
 
 public interface TaskManager {
 
+    public int getNextTaskId();
+
     ArrayList<Task> getTasks();
 
     ArrayList<Epic> getEpics();
