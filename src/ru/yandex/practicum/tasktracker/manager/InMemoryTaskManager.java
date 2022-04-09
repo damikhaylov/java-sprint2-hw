@@ -4,16 +4,20 @@ import ru.yandex.practicum.tasktracker.model.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
-public class InMemoryTaskManager implements TaskManager{
+public class InMemoryTaskManager implements TaskManager {
+    private static final int HISTORY_MAX_SIZE = 10;
     private int nextTaskId; // очередной (ещё не присвоенный) id задачи
     final private HashMap<Integer, Task> tasks;
     final private HashMap<Integer, Epic> epics;
+    final private List<Task> history;
 
     public InMemoryTaskManager() {
         nextTaskId = 1; // нумерация задач будет начинаться с 1
         tasks = new HashMap<>();
         epics = new HashMap<>();
+        history = new ArrayList<>();
     }
 
     /**
@@ -77,14 +81,22 @@ public class InMemoryTaskManager implements TaskManager{
      * Возвращает задачу по id, или null, если задачи с таким id не существует
      */
     public Task getTask(int id) {
-        return tasks.getOrDefault(id, null);
+        Task task = tasks.getOrDefault(id, null);
+        if (task != null) {
+            AddToHistory(task);
+        }
+        return task;
     }
 
     /**
      * Возвращает эпик по id, или null, если эпика с таким id не существует
      */
     public Epic getEpic(int id) {
-        return epics.getOrDefault(id, null);
+        Epic epic = epics.getOrDefault(id, null);
+        if (epic != null) {
+            AddToHistory(epic);
+        }
+        return epic;
     }
 
     /**
@@ -94,6 +106,7 @@ public class InMemoryTaskManager implements TaskManager{
         for (Integer key : epics.keySet()) {
             Subtask desiredSubtask = epics.get(key).getSubtasksMap().getOrDefault(id, null);
             if (desiredSubtask != null) {
+                AddToHistory(desiredSubtask);
                 return desiredSubtask;
             }
         }
@@ -224,5 +237,18 @@ public class InMemoryTaskManager implements TaskManager{
             }
             return newStatus; // Если статус всех подзадач был одинаков, присваиваем его эпику
         }
+    }
+
+    private void AddToHistory(Task anyTypeTask) {
+        if (anyTypeTask != null) {
+            if (history.size() == HISTORY_MAX_SIZE) {
+                history.remove(0);
+            }
+            history.add(anyTypeTask);
+        }
+    }
+
+    public List<Task> getHistory() {
+        return history;
     }
 }
