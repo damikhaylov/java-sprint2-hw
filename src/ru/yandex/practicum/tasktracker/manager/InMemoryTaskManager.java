@@ -4,25 +4,25 @@ import ru.yandex.practicum.tasktracker.model.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
-    private static final int HISTORY_MAX_SIZE = 10;
     private int nextTaskId; // очередной (ещё не присвоенный) id задачи
     final private HashMap<Integer, Task> tasks;
     final private HashMap<Integer, Epic> epics;
-    final private List<Task> history;
+    final private HistoryManager historyManager;
+
 
     public InMemoryTaskManager() {
         nextTaskId = 1; // нумерация задач будет начинаться с 1
         tasks = new HashMap<>();
         epics = new HashMap<>();
-        history = new ArrayList<>();
+        historyManager = Managers.getDefaultHistory();
     }
 
     /**
      * Возвращает очередной номер, который может быть присвоен новой задаче в качестве id
      */
+    @Override
     public int getNextTaskId() {
         return nextTaskId;
     }
@@ -30,6 +30,7 @@ public class InMemoryTaskManager implements TaskManager {
     /**
      * Возвращает все задачи в виде ArrayList c объектами Task
      */
+    @Override
     public ArrayList<Task> getTasks() {
         return new ArrayList<>(tasks.values());
     }
@@ -37,6 +38,7 @@ public class InMemoryTaskManager implements TaskManager {
     /**
      * Возвращает все эпики в виде ArrayList c объектами Epic
      */
+    @Override
     public ArrayList<Epic> getEpics() {
         return new ArrayList<>(epics.values());
     }
@@ -44,6 +46,7 @@ public class InMemoryTaskManager implements TaskManager {
     /**
      * Возвращает все подзадачи в виде ArrayList c объектами Subtask, собирая их из всех эпиков
      */
+    @Override
     public ArrayList<Subtask> getSubtasks() {
         ArrayList<Subtask> allSubtasks = new ArrayList<>();
         for (Integer key : epics.keySet()) {
@@ -55,6 +58,7 @@ public class InMemoryTaskManager implements TaskManager {
     /**
      * Удаляет все задачи
      */
+    @Override
     public void deleteAllTasks() {
         tasks.clear();
     }
@@ -62,6 +66,7 @@ public class InMemoryTaskManager implements TaskManager {
     /**
      * Удаляет все эпики
      */
+    @Override
     public void deleteAllEpics() {
         epics.clear();
     }
@@ -69,6 +74,7 @@ public class InMemoryTaskManager implements TaskManager {
     /**
      * Удаляет все подзадачи во всех эпиках
      */
+    @Override
     public void deleteAllSubtasks() {
         for (Integer key : epics.keySet()) {
             Epic epic = epics.get(key);
@@ -80,10 +86,11 @@ public class InMemoryTaskManager implements TaskManager {
     /**
      * Возвращает задачу по id, или null, если задачи с таким id не существует
      */
+    @Override
     public Task getTask(int id) {
         Task task = tasks.getOrDefault(id, null);
         if (task != null) {
-            AddToHistory(task);
+            historyManager.add(task);
         }
         return task;
     }
@@ -91,10 +98,11 @@ public class InMemoryTaskManager implements TaskManager {
     /**
      * Возвращает эпик по id, или null, если эпика с таким id не существует
      */
+    @Override
     public Epic getEpic(int id) {
         Epic epic = epics.getOrDefault(id, null);
         if (epic != null) {
-            AddToHistory(epic);
+            historyManager.add(epic);
         }
         return epic;
     }
@@ -102,11 +110,12 @@ public class InMemoryTaskManager implements TaskManager {
     /**
      * Возвращает подзадачу по id, проводя поиск во всех эпиках или null, если задачи с таким id не найдено
      */
+    @Override
     public Subtask getSubtask(int id) {
         for (Integer key : epics.keySet()) {
             Subtask desiredSubtask = epics.get(key).getSubtasksMap().getOrDefault(id, null);
             if (desiredSubtask != null) {
-                AddToHistory(desiredSubtask);
+                historyManager.add(desiredSubtask);
                 return desiredSubtask;
             }
         }
@@ -120,6 +129,7 @@ public class InMemoryTaskManager implements TaskManager {
      * @param task объект класса Task или классов-наследников Epic и Subtask
      * @return id подзадачи, если она добавлена и 0, если не добавлена
      */
+    @Override
     public int addTaskOfAnyType(Task task) {
         if (task != null && task.getId() == nextTaskId) {
             nextTaskId++;
@@ -145,6 +155,7 @@ public class InMemoryTaskManager implements TaskManager {
      * @param task объект Task
      * @return true, если подзадача добавлена, false, если нет
      */
+    @Override
     public boolean replaceTask(Task task) {
         if (task != null && tasks.containsKey(task.getId())) {
             tasks.replace(task.getId(), task);
@@ -160,6 +171,7 @@ public class InMemoryTaskManager implements TaskManager {
      * @param epic объект Epic
      * @return true, если эпик добавлен, false, если нет
      */
+    @Override
     public boolean replaceEpic(Epic epic) {
         if (epic != null && epics.containsKey(epic.getId())) {
             epics.replace(epic.getId(), epic);
@@ -175,6 +187,7 @@ public class InMemoryTaskManager implements TaskManager {
      * @param subtask объект Subtask
      * @return true, если подзадача добавлена, false, если нет
      */
+    @Override
     public boolean replaceSubtask(Subtask subtask) {
         if (subtask == null) {
             return false;
@@ -194,6 +207,7 @@ public class InMemoryTaskManager implements TaskManager {
      *
      * @param id id объекта (задачи, эпика, подзадачи)
      */
+    @Override
     public void deleteTaskOfAnyTypeById(int id) {
         if (tasks.containsKey(id)) {
             tasks.remove(id);
@@ -239,16 +253,4 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    private void AddToHistory(Task anyTypeTask) {
-        if (anyTypeTask != null) {
-            if (history.size() == HISTORY_MAX_SIZE) {
-                history.remove(0);
-            }
-            history.add(anyTypeTask);
-        }
-    }
-
-    public List<Task> getHistory() {
-        return history;
-    }
 }

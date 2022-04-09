@@ -71,12 +71,12 @@ public class Main {
         /*========= Распечатка истории просмотра =========*/
 
         System.out.println("\n----- История просмотренных задач -----");
-        printHistory(taskManager.getHistory());
+        printHistory(Managers.getDefaultHistory().getHistory());
 
         /*========= Просмотр 11-й задачи и распечатка истории (для проверки перемещения очереди) =========*/
 
         taskManager.getTask(idEatBunsDrinkTeaTask); // повторный просмотр
-        System.out.println("\n----- Новая история задач после кщё одного просмотра -----");
-        printHistory(taskManager.getHistory());
+        System.out.println("\n----- Новая история задач после ещё одного просмотра -----");
+        printHistory(Managers.getDefaultHistory().getHistory());
     }
 }
