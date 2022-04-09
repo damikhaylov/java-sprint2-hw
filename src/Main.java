@@ -1,5 +1,6 @@
 import ru.yandex.practicum.tasktracker.manager.*;
 import ru.yandex.practicum.tasktracker.model.*;
+
 import java.util.List;
 
 public class Main {
@@ -17,7 +18,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
+        TaskManager taskManager = Managers.getDefault();
         Task task; // Объект для формирования задачи и передачи в методы TaskManager
         Epic epic; // Объект для формирования эпика и передачи в методы TaskManager
         Subtask subtask; // Объект для формирования подзадачи и передачи в методы TaskManager
@@ -25,57 +26,57 @@ public class Main {
         /*========= Создание тестовых задач, эпиков и подзадач =========*/
 
         // Создание двух задач
-        task = new Task(inMemoryTaskManager.getNextTaskId(), "Покормить кота", TaskStatus.NEW,
+        task = new Task(taskManager.getNextTaskId(), "Покормить кота", TaskStatus.NEW,
                 "Дать коту в обед четверть банки корма «Berkley»");
-        int idFeedTheCatTask = inMemoryTaskManager.addTaskOfAnyType(task);
-        task = new Task(inMemoryTaskManager.getNextTaskId(), "Попить чаю с булками", TaskStatus.NEW,
+        int idFeedTheCatTask = taskManager.addTaskOfAnyType(task);
+        task = new Task(taskManager.getNextTaskId(), "Попить чаю с булками", TaskStatus.NEW,
                 "Съесть ещё этих мягких французских булок да выпить чаю");
-        int idEatBunsDrinkTeaTask = inMemoryTaskManager.addTaskOfAnyType(task);
+        int idEatBunsDrinkTeaTask = taskManager.addTaskOfAnyType(task);
 
         // Создание эпика с двумя подзадачами
-        epic = new Epic(inMemoryTaskManager.getNextTaskId(), "Запроектировать трёхэтажный каркас",
+        epic = new Epic(taskManager.getNextTaskId(), "Запроектировать трёхэтажный каркас",
                 "Выполнить проект каркаса трёхэтажного административного здания");
-        int idDesignStructureEpic = inMemoryTaskManager.addTaskOfAnyType(epic);
-        subtask = new Subtask(inMemoryTaskManager.getNextTaskId(), "Рассчитать плоскую раму", TaskStatus.NEW,
+        int idDesignStructureEpic = taskManager.addTaskOfAnyType(epic);
+        subtask = new Subtask(taskManager.getNextTaskId(), "Рассчитать плоскую раму", TaskStatus.NEW,
                 "Выполнить статический расчёт плоской рамы и подобрать сечения элементов",
                 epic);
-        int idDesignFrameSubtask = inMemoryTaskManager.addTaskOfAnyType(subtask);
-        subtask = new Subtask(inMemoryTaskManager.getNextTaskId(), "Выполнить пространственный расчёт",
+        int idDesignFrameSubtask = taskManager.addTaskOfAnyType(subtask);
+        subtask = new Subtask(taskManager.getNextTaskId(), "Выполнить пространственный расчёт",
                 TaskStatus.NEW,
                 "Выполнить пространственный расчёт с учётом действия пульсационных ветровых нагрузок",
                 epic);
-        int idDesign3DSubtask = inMemoryTaskManager.addTaskOfAnyType(subtask);
+        int idDesign3DSubtask = taskManager.addTaskOfAnyType(subtask);
 
         // Создание эпика с одной подзадачей
-        epic = new Epic(inMemoryTaskManager.getNextTaskId(), "Выполнить ТО автомобиля",
+        epic = new Epic(taskManager.getNextTaskId(), "Выполнить ТО автомобиля",
                 null);
-        int idCarMaintenanceEpic = inMemoryTaskManager.addTaskOfAnyType(epic);
-        subtask = new Subtask(inMemoryTaskManager.getNextTaskId(), "Поменять масло", TaskStatus.NEW,
+        int idCarMaintenanceEpic = taskManager.addTaskOfAnyType(epic);
+        subtask = new Subtask(taskManager.getNextTaskId(), "Поменять масло", TaskStatus.NEW,
                 null, epic);
-        int idOilChangeSubtask = inMemoryTaskManager.addTaskOfAnyType(subtask);
+        int idOilChangeSubtask = taskManager.addTaskOfAnyType(subtask);
 
         /*========= Имитация просмотра тестовых задач, эпиков и подзадач =========*/
 
-        inMemoryTaskManager.getTask(idFeedTheCatTask);
-        inMemoryTaskManager.getTask(idEatBunsDrinkTeaTask);
-        inMemoryTaskManager.getEpic(idCarMaintenanceEpic);
-        inMemoryTaskManager.getSubtask(idOilChangeSubtask);
-        inMemoryTaskManager.getTask(idFeedTheCatTask); // повторный просмотр
-        inMemoryTaskManager.getTask(idEatBunsDrinkTeaTask); // повторный просмотр
-        inMemoryTaskManager.getEpic(idDesignStructureEpic);
-        inMemoryTaskManager.getSubtask(idDesignFrameSubtask);
-        inMemoryTaskManager.getSubtask(idDesign3DSubtask);
-        inMemoryTaskManager.getTask(idFeedTheCatTask); // повторный просмотр
+        taskManager.getTask(idFeedTheCatTask);
+        taskManager.getTask(idEatBunsDrinkTeaTask);
+        taskManager.getEpic(idCarMaintenanceEpic);
+        taskManager.getSubtask(idOilChangeSubtask);
+        taskManager.getTask(idFeedTheCatTask); // повторный просмотр
+        taskManager.getTask(idEatBunsDrinkTeaTask); // повторный просмотр
+        taskManager.getEpic(idDesignStructureEpic);
+        taskManager.getSubtask(idDesignFrameSubtask);
+        taskManager.getSubtask(idDesign3DSubtask);
+        taskManager.getTask(idFeedTheCatTask); // повторный просмотр
 
         /*========= Распечатка истории просмотра =========*/
 
         System.out.println("\n----- История просмотренных задач -----");
-        printHistory(inMemoryTaskManager.getHistory());
+        printHistory(taskManager.getHistory());
 
         /*========= Просмотр 11-й задачи и распечатка истории (для проверки перемещения очереди) =========*/
 
-        inMemoryTaskManager.getTask(idEatBunsDrinkTeaTask); // повторный просмотр
+        taskManager.getTask(idEatBunsDrinkTeaTask); // повторный просмотр
         System.out.println("\n----- Новая история задач после кщё одного просмотра -----");
-        printHistory(inMemoryTaskManager.getHistory());
+        printHistory(taskManager.getHistory());
     }
 }
