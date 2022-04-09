@@ -76,21 +76,21 @@ public class InMemoryTaskManager implements TaskManager{
     /**
      * Возвращает задачу по id, или null, если задачи с таким id не существует
      */
-    public Task getTaskById(int id) {
+    public Task getTask(int id) {
         return tasks.getOrDefault(id, null);
     }
 
     /**
      * Возвращает эпик по id, или null, если эпика с таким id не существует
      */
-    public Epic getEpicById(int id) {
+    public Epic getEpic(int id) {
         return epics.getOrDefault(id, null);
     }
 
     /**
      * Возвращает подзадачу по id, проводя поиск во всех эпиках или null, если задачи с таким id не найдено
      */
-    public Subtask getSubtaskById(int id) {
+    public Subtask getSubtask(int id) {
         for (Integer key : epics.keySet()) {
             Subtask desiredSubtask = epics.get(key).getSubtasksMap().getOrDefault(id, null);
             if (desiredSubtask != null) {

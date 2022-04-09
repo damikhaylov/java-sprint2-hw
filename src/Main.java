@@ -37,12 +37,12 @@ public class Main {
         int idDesignStructureEpic = inMemoryTaskManager.addTaskOfAnyType(epic);
         subtask = new Subtask(inMemoryTaskManager.getNextTaskId(), "Рассчитать плоскую раму", TaskStatus.NEW,
                 "Выполнить статический расчёт плоской рамы и подобрать сечения элементов",
-                inMemoryTaskManager.getEpicById(idDesignStructureEpic));
+                inMemoryTaskManager.getEpic(idDesignStructureEpic));
         int idDesignFrameSubtask = inMemoryTaskManager.addTaskOfAnyType(subtask);
         subtask = new Subtask(inMemoryTaskManager.getNextTaskId(), "Выполнить пространственный расчёт",
                 TaskStatus.NEW,
                 "Выполнить пространственный расчёт с учётом действия пульсационных ветровых нагрузок",
-                inMemoryTaskManager.getEpicById(idDesignStructureEpic));
+                inMemoryTaskManager.getEpic(idDesignStructureEpic));
         int idDesign3DSubtask = inMemoryTaskManager.addTaskOfAnyType(subtask);
 
         // Создание эпика с одной подзадачей
@@ -50,7 +50,7 @@ public class Main {
                 null);
         int idCarMaintenanceEpic = inMemoryTaskManager.addTaskOfAnyType(epic);
         subtask = new Subtask(inMemoryTaskManager.getNextTaskId(), "Поменять масло", TaskStatus.NEW,
-                null, inMemoryTaskManager.getEpicById(idCarMaintenanceEpic));
+                null, inMemoryTaskManager.getEpic(idCarMaintenanceEpic));
         int idOilChangeSubtask = inMemoryTaskManager.addTaskOfAnyType(subtask);
 
         System.out.println("\n----- Списки всех типов задач после создания объектов -----");
@@ -58,25 +58,25 @@ public class Main {
 
         /*========= Изменение статусов созданных объектов =========*/
 
-        task = inMemoryTaskManager.getTaskById(idFeedTheCatTask);
+        task = inMemoryTaskManager.getTask(idFeedTheCatTask);
         task = new Task(task.getId(), task.getName(), TaskStatus.DONE, task.getDescription());
         inMemoryTaskManager.replaceTask(task);
 
-        task = inMemoryTaskManager.getTaskById(idEatBunsDrinkTeaTask);
+        task = inMemoryTaskManager.getTask(idEatBunsDrinkTeaTask);
         task = new Task(task.getId(), task.getName(), TaskStatus.IN_PROGRESS, task.getDescription());
         inMemoryTaskManager.replaceTask(task);
 
-        subtask = inMemoryTaskManager.getSubtaskById(idDesignFrameSubtask);
+        subtask = inMemoryTaskManager.getSubtask(idDesignFrameSubtask);
         subtask = new Subtask(subtask.getId(), subtask.getName(), TaskStatus.DONE, subtask.getDescription(),
                 subtask.getEpic());
         inMemoryTaskManager.replaceSubtask(subtask);
 
-        subtask = inMemoryTaskManager.getSubtaskById(idDesign3DSubtask);
+        subtask = inMemoryTaskManager.getSubtask(idDesign3DSubtask);
         subtask = new Subtask(subtask.getId(), subtask.getName(), TaskStatus.IN_PROGRESS, subtask.getDescription(),
                 subtask.getEpic());
         inMemoryTaskManager.replaceSubtask(subtask);
 
-        subtask = inMemoryTaskManager.getSubtaskById(idOilChangeSubtask);
+        subtask = inMemoryTaskManager.getSubtask(idOilChangeSubtask);
         subtask = new Subtask(subtask.getId(), subtask.getName(), TaskStatus.DONE, subtask.getDescription(),
                 subtask.getEpic());
         inMemoryTaskManager.replaceSubtask(subtask);
