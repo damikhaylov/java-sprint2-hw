@@ -1,6 +1,6 @@
 package ru.yandex.practicum.tasktracker.model;
 
-import ru.yandex.practicum.tasktracker.manager.TaskManager;
+import ru.yandex.practicum.tasktracker.manager.InMemoryTaskManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ public class Epic extends Task {
      * к непосредственной установке значения статуса эпика.
      */
     public void renewStatus() {
-        status = TaskManager.getEpicStatusBySubtasks(subtasks);
+        status = InMemoryTaskManager.getEpicStatusBySubtasks(subtasks);
     }
 
     /**
