@@ -80,7 +80,7 @@ public class InMemoryTaskManager implements TaskManager {
         for (Integer key : epics.keySet()) {
             Epic epic = epics.get(key);
             epic.getSubtasksMap().clear();
-            epic.renewStatus();
+            epic.setStatus(getEpicStatusBySubtasks(epic.getSubtasksMap()));
         }
     }
 
@@ -139,8 +139,9 @@ public class InMemoryTaskManager implements TaskManager {
                 return task.getId();
             } else if (task.getClass() == Subtask.class) {
                 Subtask subtask = (Subtask) task;
-                subtask.getEpic().getSubtasksMap().put(subtask.getId(), subtask);
-                subtask.getEpic().renewStatus();
+                Epic epic = subtask.getEpic();
+                epic.getSubtasksMap().put(subtask.getId(), subtask);
+                epic.setStatus(getEpicStatusBySubtasks(epic.getSubtasksMap()));
                 return subtask.getId();
             } else {
                 tasks.put(task.getId(), task);
@@ -196,7 +197,7 @@ public class InMemoryTaskManager implements TaskManager {
         Epic epic = subtask.getEpic();
         if (epic.getSubtasksMap().containsKey(subtask.getId())) {
             epic.getSubtasksMap().replace(subtask.getId(), subtask);
-            epic.renewStatus(); // Вызывается обновление статуса эпика в связи с возможным изменением статуса подзадачи
+            epic.setStatus(getEpicStatusBySubtasks(epic.getSubtasksMap()));
             return true;
         } else {
             return false;
@@ -219,7 +220,7 @@ public class InMemoryTaskManager implements TaskManager {
                 Epic epic = epics.get(key);
                 if (epic.getSubtasksMap().containsKey(id)) {
                     epic.getSubtasksMap().remove(id);
-                    epic.renewStatus(); // Вызывается обновление статуса эпика в связи с изменением состава подзадач
+                    epic.setStatus(getEpicStatusBySubtasks(epic.getSubtasksMap()));
                     return;
                 }
             }
@@ -227,7 +228,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     /**
-     *  Возвращает историю просмотров задач, эпиков подзадач
+     * Возвращает историю просмотров задач, эпиков подзадач
      */
     @Override
     public List<Task> getHistory() {
@@ -240,7 +241,7 @@ public class InMemoryTaskManager implements TaskManager {
      * @param subtasks HashMap, содержащий подзадачи
      * @return TaskStatus статус эпика, который содержал бы переданную в качестве аргумента коллекцию подзадач
      */
-    public static TaskStatus getEpicStatusBySubtasks(HashMap<Integer, Subtask> subtasks) {
+    private static TaskStatus getEpicStatusBySubtasks(HashMap<Integer, Subtask> subtasks) {
         if (subtasks.size() == 0) {
             return TaskStatus.NEW;
         } else {

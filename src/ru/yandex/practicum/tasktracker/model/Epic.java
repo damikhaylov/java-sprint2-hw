@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class Epic extends Task {
-    // Сокрытие переменной status суперкласса применяется, чтобы работать со статусом эпика,
-    // не открывая доступ к установке значения статуса пользователю кроме как через конструктор задач и подзадач
     private TaskStatus status;
     final private HashMap<Integer, Subtask> subtasks;
 
@@ -22,13 +20,8 @@ public class Epic extends Task {
         return status;
     }
 
-    /**
-     * Обновляет статус эпика на основе перебора статусов его подзадач. Логика вынесена в статический метод
-     * getEpicStatusBySubtasks класса TaskManager, но сам метод принадлежит классу Epic, чтобы не открывать вовне доступ
-     * к непосредственной установке значения статуса эпика.
-     */
-    public void renewStatus() {
-        status = InMemoryTaskManager.getEpicStatusBySubtasks(subtasks);
+    public void setStatus(TaskStatus status) {
+        this.status = status;
     }
 
     /**
