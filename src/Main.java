@@ -4,18 +4,6 @@ import ru.yandex.practicum.tasktracker.model.*;
 import java.util.List;
 
 public class Main {
-    private static void printHistory(List<Task> history) {
-        for (Task anyTypeTask : history) {
-            System.out.print(anyTypeTask.getId() + " " + anyTypeTask.getName());
-            if (anyTypeTask.getClass() == Epic.class) {
-                System.out.println(" (эпик)");
-            } else if (anyTypeTask.getClass() == Subtask.class) {
-                System.out.println(" (подзадача)");
-            } else {
-                System.out.println(" (задача)");
-            }
-        }
-    }
 
     public static void main(String[] args) {
         TaskManager taskManager = Managers.getDefault();
@@ -78,5 +66,18 @@ public class Main {
         taskManager.getTask(idEatBunsDrinkTeaTask); // повторный просмотр
         System.out.println("\n----- Новая история задач после ещё одного просмотра -----");
         printHistory(taskManager.getHistory());
+    }
+
+    private static void printHistory(List<Task> history) {
+        for (Task anyTypeTask : history) {
+            System.out.print(anyTypeTask.getId() + " " + anyTypeTask.getName());
+            if (anyTypeTask.getClass() == Epic.class) {
+                System.out.println(" (эпик)");
+            } else if (anyTypeTask.getClass() == Subtask.class) {
+                System.out.println(" (подзадача)");
+            } else {
+                System.out.println(" (задача)");
+            }
+        }
     }
 }
