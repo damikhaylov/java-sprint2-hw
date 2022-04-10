@@ -4,6 +4,7 @@ import ru.yandex.practicum.tasktracker.model.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
     private int nextTaskId; // очередной (ещё не присвоенный) id задачи
@@ -223,6 +224,14 @@ public class InMemoryTaskManager implements TaskManager {
                 }
             }
         }
+    }
+
+    /**
+     *  Возвращает историю просмотров задач, эпиков подзадач
+     */
+    @Override
+    public List<Task> getHistory() {
+        return historyManager.getHistory();
     }
 
     /**

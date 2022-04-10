@@ -5,6 +5,7 @@ import ru.yandex.practicum.tasktracker.model.Subtask;
 import ru.yandex.practicum.tasktracker.model.Task;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public interface TaskManager {
 
@@ -37,5 +38,7 @@ public interface TaskManager {
     boolean replaceSubtask(Subtask subtask);
 
     void deleteTaskOfAnyTypeById(int id);
+
+    List<Task> getHistory();
 
 }
