@@ -1,17 +1,14 @@
 package ru.yandex.practicum.tasktracker.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class Epic extends Task {
     private TaskStatus status;
-    final private Map<Integer, Subtask> subtasks;
+    final private Set<Integer> subtasksIdSet; // множество, содержащее идентификаторы подзадач
 
     public Epic(int id, String name, String description) {
         super(id, name, TaskStatus.NEW, description);
-        subtasks = new HashMap<>();
+        subtasksIdSet = new HashSet<>();
     }
 
     @Override
@@ -24,22 +21,14 @@ public class Epic extends Task {
     }
 
     /**
-     * Возвращает все подзадачи эпика в виде HashMap
+     * Возвращает идентификаторы всех подзадач эпика в виде HashSet
      *
-     * @return HashMap c объектами Subtask в качестве значений и int идентификаторами подзадач в качестве ключей
+     * @return HashSet c int идентификаторами подзадач
      */
-    public Map<Integer, Subtask> getSubtasksMap() {
-        return subtasks;
+    public Set<Integer> getSubtasksIdSet() {
+        return subtasksIdSet;
     }
 
-    /**
-     * Возвращает все подзадачи эпика в виде ArrayList
-     *
-     * @return ArrayList c объектами Subtask
-     */
-    public ArrayList<Subtask> getSubtasksList() {
-        return new ArrayList<>(subtasks.values());
-    }
 
     @Override
     public String toString() {
@@ -52,7 +41,7 @@ public class Epic extends Task {
         } else {
             result.append("description=null, ");
         }
-        result.append("subtasks=").append(getSubtasksMap().values());
+        result.append("subtasks=").append(getSubtasksIdSet());
         result.append('}');
         return result.toString();
     }
@@ -64,14 +53,14 @@ public class Epic extends Task {
         if (!super.equals(o)) return false;
         Epic epic = (Epic) o;
         return Objects.equals(getStatus(), epic.getStatus())
-                && Objects.equals(getSubtasksMap(), epic.getSubtasksMap());
+                && Objects.equals(getSubtasksIdSet(), epic.getSubtasksIdSet());
     }
 
     @Override
     public int hashCode() {
         int hash = super.hashCode();
         hash = 31 * hash + (getStatus() != null ? getStatus().hashCode() : 0);
-        hash = 31 * hash + (getSubtasksMap() != null ? getSubtasksMap().hashCode() : 0);
+        hash = 31 * hash + (getSubtasksIdSet() != null ? getSubtasksIdSet().hashCode() : 0);
         return hash;
     }
 }
