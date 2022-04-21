@@ -5,6 +5,7 @@ import ru.yandex.practicum.tasktracker.model.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public class InMemoryTaskManager implements TaskManager {
     private int nextTaskId; // очередной (ещё не присвоенный) id задачи
@@ -61,6 +62,7 @@ public class InMemoryTaskManager implements TaskManager {
      */
     @Override
     public void deleteAllTasks() {
+        deleteAnyTypeTasksFromHistory(tasks.keySet()); // удаление из истории просмотров
         tasks.clear();
     }
 
@@ -69,6 +71,7 @@ public class InMemoryTaskManager implements TaskManager {
      */
     @Override
     public void deleteAllEpics() {
+        deleteAnyTypeTasksFromHistory(epics.keySet()); // удаление из истории просмотров
         epics.clear();
     }
 
@@ -79,8 +82,15 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteAllSubtasks() {
         for (Integer key : epics.keySet()) {
             Epic epic = epics.get(key);
+            deleteAnyTypeTasksFromHistory(epic.getSubtasksMap().keySet()); // удаление из истории просмотров
             epic.getSubtasksMap().clear();
             epic.setStatus(getEpicStatusBySubtasks(epic.getSubtasksMap()));
+        }
+    }
+
+    private void deleteAnyTypeTasksFromHistory(Set<Integer> idSet) {
+        for (Integer id : idSet) {
+            historyManager.remove(id);
         }
     }
 
@@ -225,6 +235,7 @@ public class InMemoryTaskManager implements TaskManager {
                 }
             }
         }
+        historyManager.remove(id); // удаление задачи также из истории просмотров
     }
 
     /**
