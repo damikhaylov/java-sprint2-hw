@@ -224,6 +224,8 @@ public class InMemoryTaskManager implements TaskManager {
         if (tasks.containsKey(id)) {
             tasks.remove(id);
         } else if (epics.containsKey(id)) {
+            // удаление всех подзадач эпика из истории просмотра
+            deleteAnyTypeTasksFromHistory(epics.get(id).getSubtasksMap().keySet());
             epics.remove(id);
         } else {
             for (Integer key : epics.keySet()) {
@@ -235,7 +237,7 @@ public class InMemoryTaskManager implements TaskManager {
                 }
             }
         }
-        historyManager.remove(id); // удаление задачи также из истории просмотров
+        historyManager.remove(id); // удаление задачи с заданным id также из истории просмотров
     }
 
     /**
