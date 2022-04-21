@@ -51,8 +51,8 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public ArrayList<Subtask> getSubtasks() {
         ArrayList<Subtask> allSubtasks = new ArrayList<>();
-        for (Integer key : epics.keySet()) {
-            allSubtasks.addAll(epics.get(key).getSubtasksList());
+        for (Epic epic : epics.values()) {
+            allSubtasks.addAll(epic.getSubtasksList());
         }
         return allSubtasks;
     }
@@ -84,8 +84,7 @@ public class InMemoryTaskManager implements TaskManager {
      */
     @Override
     public void removeAllSubtasks() {
-        for (Integer key : epics.keySet()) {
-            Epic epic = epics.get(key);
+        for (Epic epic : epics.values()) {
             removeTasksFromHistoryByIDSet(epic.getSubtasksMap().keySet()); // удаление из истории просмотров
             epic.getSubtasksMap().clear();
             epic.setStatus(getEpicStatusBySubtasks(epic.getSubtasksMap()));
@@ -127,8 +126,8 @@ public class InMemoryTaskManager implements TaskManager {
      */
     @Override
     public Subtask getSubtask(int id) {
-        for (Integer key : epics.keySet()) {
-            Subtask desiredSubtask = epics.get(key).getSubtasksMap().getOrDefault(id, null);
+        for (Epic epic : epics.values()) {
+            Subtask desiredSubtask = epic.getSubtasksMap().getOrDefault(id, null);
             if (desiredSubtask != null) {
                 historyManager.add(desiredSubtask);
                 return desiredSubtask;
@@ -232,8 +231,7 @@ public class InMemoryTaskManager implements TaskManager {
             removeTasksFromHistoryByIDSet(epics.get(id).getSubtasksMap().keySet());
             epics.remove(id);
         } else {
-            for (Integer key : epics.keySet()) {
-                Epic epic = epics.get(key);
+            for (Epic epic : epics.values()) {
                 if (epic.getSubtasksMap().containsKey(id)) {
                     epic.getSubtasksMap().remove(id);
                     epic.setStatus(getEpicStatusBySubtasks(epic.getSubtasksMap()));
@@ -263,8 +261,8 @@ public class InMemoryTaskManager implements TaskManager {
             return TaskStatus.NEW;
         } else {
             TaskStatus newStatus = null;
-            for (Integer key : subtasks.keySet()) {
-                TaskStatus subtaskStatus = subtasks.get(key).getStatus();
+            for (Subtask subtask : subtasks.values()) {
+                TaskStatus subtaskStatus = subtask.getStatus();
                 if (newStatus == null) { // Блок для присвоения переменной статуса первой подзадачи
                     newStatus = subtaskStatus;
                 }
