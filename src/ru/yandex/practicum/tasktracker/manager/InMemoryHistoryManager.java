@@ -24,21 +24,23 @@ public class InMemoryHistoryManager implements HistoryManager {
                 removeNode(historyMap.get(id));
             }
             linkLast(task);
-            historyMap.put(id, tail);
+            historyMap.put(id, tail); // запись нового или замена существовавшего узла с ключом id
         }
     }
 
     private void removeNode(Node<Task> node) {
-        if (node == null) return;
-        if (!node.equals(head)) {
-            node.prev.next = node.next;
-        } else {
+        if (node.equals(head) && node.equals(tail)) {
+            head = null;
+            tail = null;
+        } else if (node.equals(head)) {
+            node.next.prev = null;
             head = node.next;
-        }
-        if (!node.equals(tail)) {
-            node.next.prev = node.prev;
-        } else {
+        } else if (node.equals(tail)) {
+            node.prev.next = null;
             tail = node.prev;
+        } else if (node != null) {
+            node.prev.next = node.next;
+            node.next.prev = node.prev;
         }
     }
 
