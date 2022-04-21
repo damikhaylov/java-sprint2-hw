@@ -3,22 +3,17 @@ package ru.yandex.practicum.tasktracker.manager;
 import ru.yandex.practicum.tasktracker.model.Task;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private final LinkedList<Task> history;
+    private Node<Task> head;
+    private Node<Task> tail;
 
-
-    InMemoryHistoryManager() {
-        history = new LinkedList<>();
-    }
 
     @Override
     public void add(Task task) {
         if (task != null) {
-            history.add(task);
+            linkLast(task);
         }
     }
 
@@ -29,6 +24,27 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public List<Task> getHistory() {
-        return new ArrayList<>(history);
+        return getTasks();
+    }
+
+    private void linkLast(Task element) {
+        final Node<Task> oldTail = tail;
+        final Node<Task> newNode = new Node<>(oldTail, element, null);
+        tail = newNode;
+        if (oldTail == null)
+            head = newNode;
+        else
+            oldTail.next = newNode;
+    }
+
+    private List<Task> getTasks() {
+        List<Task> tasks = new ArrayList<>();
+        Node<Task> currentNode = head;
+        while (currentNode != null) {
+            tasks.add(currentNode.data);
+            currentNode = currentNode.next;
+        }
+        return tasks;
     }
 }
+
