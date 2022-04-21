@@ -17,11 +17,11 @@ public interface TaskManager {
 
     ArrayList<Subtask> getSubtasks();
 
-    void deleteAllTasks();
+    void removeAllTasks();
 
-    void deleteAllEpics();
+    void removeAllEpics();
 
-    void deleteAllSubtasks();
+    void removeAllSubtasks();
 
     Task getTask(int id);
 
@@ -37,7 +37,7 @@ public interface TaskManager {
 
     boolean replaceSubtask(Subtask subtask);
 
-    void deleteTaskOfAnyTypeById(int id);
+    void removeTaskOfAnyTypeById(int id);
 
     List<Task> getHistory();
 

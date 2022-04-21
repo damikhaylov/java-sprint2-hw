@@ -61,8 +61,8 @@ public class InMemoryTaskManager implements TaskManager {
      * Удаляет все задачи
      */
     @Override
-    public void deleteAllTasks() {
-        deleteAnyTypeTasksFromHistory(tasks.keySet()); // удаление из истории просмотров
+    public void removeAllTasks() {
+        removeTasksFromHistoryByIDSet(tasks.keySet()); // удаление из истории просмотров
         tasks.clear();
     }
 
@@ -70,12 +70,12 @@ public class InMemoryTaskManager implements TaskManager {
      * Удаляет все эпики
      */
     @Override
-    public void deleteAllEpics() {
+    public void removeAllEpics() {
         // удаление всех подзадач каждого эпика из истории просмотров
         for (Epic epic : epics.values()) {
-            deleteAnyTypeTasksFromHistory(epic.getSubtasksMap().keySet());
+            removeTasksFromHistoryByIDSet(epic.getSubtasksMap().keySet());
         }
-        deleteAnyTypeTasksFromHistory(epics.keySet()); // удаление всех эпиков из истории просмотров
+        removeTasksFromHistoryByIDSet(epics.keySet()); // удаление всех эпиков из истории просмотров
         epics.clear();
     }
 
@@ -83,16 +83,16 @@ public class InMemoryTaskManager implements TaskManager {
      * Удаляет все подзадачи во всех эпиках
      */
     @Override
-    public void deleteAllSubtasks() {
+    public void removeAllSubtasks() {
         for (Integer key : epics.keySet()) {
             Epic epic = epics.get(key);
-            deleteAnyTypeTasksFromHistory(epic.getSubtasksMap().keySet()); // удаление из истории просмотров
+            removeTasksFromHistoryByIDSet(epic.getSubtasksMap().keySet()); // удаление из истории просмотров
             epic.getSubtasksMap().clear();
             epic.setStatus(getEpicStatusBySubtasks(epic.getSubtasksMap()));
         }
     }
 
-    private void deleteAnyTypeTasksFromHistory(Set<Integer> idSet) {
+    private void removeTasksFromHistoryByIDSet(Set<Integer> idSet) {
         for (Integer id : idSet) {
             historyManager.remove(id);
         }
@@ -224,12 +224,12 @@ public class InMemoryTaskManager implements TaskManager {
      * @param id id объекта (задачи, эпика, подзадачи)
      */
     @Override
-    public void deleteTaskOfAnyTypeById(int id) {
+    public void removeTaskOfAnyTypeById(int id) {
         if (tasks.containsKey(id)) {
             tasks.remove(id);
         } else if (epics.containsKey(id)) {
             // удаление всех подзадач эпика из истории просмотра
-            deleteAnyTypeTasksFromHistory(epics.get(id).getSubtasksMap().keySet());
+            removeTasksFromHistoryByIDSet(epics.get(id).getSubtasksMap().keySet());
             epics.remove(id);
         } else {
             for (Integer key : epics.keySet()) {

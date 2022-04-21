@@ -59,13 +59,13 @@ public class Main {
         printHistory(taskManager.getHistory());
 
         /*========= Удаление одной из просмотренных задач =========*/
-        taskManager.deleteTaskOfAnyTypeById(idEatBunsDrinkTeaTask);
+        taskManager.removeTaskOfAnyTypeById(idEatBunsDrinkTeaTask);
         System.out.println("\n----- История просмотренных задач после удаления одной из задач -----");
         printHistory(taskManager.getHistory());
 
         /*========= Удаление оставшихся просмотренных задач =========*/
-        taskManager.deleteTaskOfAnyTypeById(idFeedTheCatTask);
-        taskManager.deleteTaskOfAnyTypeById(idCarMaintenanceEpic);
+        taskManager.removeTaskOfAnyTypeById(idFeedTheCatTask);
+        taskManager.removeTaskOfAnyTypeById(idCarMaintenanceEpic);
         System.out.println("\n----- История после удаления всех просмотренных задач -----");
         printHistory(taskManager.getHistory());
 
@@ -84,7 +84,7 @@ public class Main {
         printHistory(taskManager.getHistory());
 
         /*========= Удаление эпика =========*/
-        taskManager.deleteTaskOfAnyTypeById(idDesignStructureEpic);
+        taskManager.removeTaskOfAnyTypeById(idDesignStructureEpic);
         System.out.println("\n----- История после удаления эпика (включающего подзадачи) -----");
         printHistory(taskManager.getHistory());
     }
