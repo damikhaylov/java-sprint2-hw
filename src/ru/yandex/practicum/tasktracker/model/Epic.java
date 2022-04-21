@@ -1,14 +1,13 @@
 package ru.yandex.practicum.tasktracker.model;
 
-import ru.yandex.practicum.tasktracker.manager.InMemoryTaskManager;
-
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class Epic extends Task {
     private TaskStatus status;
-    final private HashMap<Integer, Subtask> subtasks;
+    final private Map<Integer, Subtask> subtasks;
 
     public Epic(int id, String name, String description) {
         super(id, name, TaskStatus.NEW, description);
@@ -29,7 +28,7 @@ public class Epic extends Task {
      *
      * @return HashMap c объектами Subtask в качестве значений и int идентификаторами подзадач в качестве ключей
      */
-    public HashMap<Integer, Subtask> getSubtasksMap() {
+    public Map<Integer, Subtask> getSubtasksMap() {
         return subtasks;
     }
 

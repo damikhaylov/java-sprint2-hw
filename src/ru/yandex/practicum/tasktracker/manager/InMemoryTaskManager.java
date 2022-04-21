@@ -2,17 +2,17 @@ package ru.yandex.practicum.tasktracker.manager;
 
 import ru.yandex.practicum.tasktracker.model.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.List;
 import java.util.Set;
 
 public class InMemoryTaskManager implements TaskManager {
     private int nextTaskId; // очередной (ещё не присвоенный) id задачи
-    final private HashMap<Integer, Task> tasks;
-    final private HashMap<Integer, Epic> epics;
+    final private Map<Integer, Task> tasks;
+    final private Map<Integer, Epic> epics;
     final private HistoryManager historyManager;
-
 
     public InMemoryTaskManager() {
         nextTaskId = 1; // нумерация задач будет начинаться с 1
@@ -256,7 +256,7 @@ public class InMemoryTaskManager implements TaskManager {
      * @param subtasks HashMap, содержащий подзадачи
      * @return TaskStatus статус эпика, который содержал бы переданную в качестве аргумента коллекцию подзадач
      */
-    private static TaskStatus getEpicStatusBySubtasks(HashMap<Integer, Subtask> subtasks) {
+    private static TaskStatus getEpicStatusBySubtasks(Map<Integer, Subtask> subtasks) {
         if (subtasks.size() == 0) {
             return TaskStatus.NEW;
         } else {
@@ -277,5 +277,4 @@ public class InMemoryTaskManager implements TaskManager {
             return newStatus; // Если статус всех подзадач был одинаков, присваиваем его эпику
         }
     }
-
 }
