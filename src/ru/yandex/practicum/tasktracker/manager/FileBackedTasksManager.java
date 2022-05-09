@@ -4,10 +4,34 @@ import ru.yandex.practicum.tasktracker.model.Epic;
 import ru.yandex.practicum.tasktracker.model.Subtask;
 import ru.yandex.practicum.tasktracker.model.Task;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+
 public class FileBackedTasksManager extends InMemoryTaskManager implements TaskManager {
 
-    public void save() {
+    private static final String FILE_NAME = "tasks.csv";
+    private static final String CSV_HEAD = "id,type,name,status,description,epic";
 
+    public void save() {
+        String csv = getCSVForAllTasks();
+        try (Writer fileWriter = new FileWriter(FILE_NAME)) {
+            fileWriter.write(csv);
+        } catch (IOException exception) {
+        }
+    }
+
+    private String getCSVForAllTasks() {
+        List<Task> tasks = new ArrayList<>(getTasks());
+        tasks.addAll(getEpics());
+        tasks.addAll(getSubtasks());
+        StringBuilder stringBuilder = new StringBuilder(CSV_HEAD).append("\n");
+        for (Task task : tasks) {
+            stringBuilder.append(toString(task)).append("\n");
+        }
+        return stringBuilder.toString();
     }
 
     @Override
@@ -64,12 +88,12 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
 
     static public String toString(Task task) {
         return String.format("%d,%S,%s,%s,%s,%s",
-                                task.getId(),
-                                task.getClass().getSimpleName(),
-                                task.getName(),
-                                task.getStatus(),
-                                task.getDescription(),
-                                ((task instanceof Subtask) ? ((Subtask) task).getEpic().getId() : "")
-                            );
+                task.getId(),
+                task.getClass().getSimpleName(),
+                task.getName(),
+                task.getStatus(),
+                task.getDescription(),
+                ((task instanceof Subtask) ? ((Subtask) task).getEpic().getId() : "")
+        );
     }
 }
