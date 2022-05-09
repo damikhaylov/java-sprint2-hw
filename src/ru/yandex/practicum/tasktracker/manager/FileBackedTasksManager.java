@@ -63,17 +63,13 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     }
 
     static public String toString(Task task) {
-        final char sep = ',';
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(task.getId()).append(sep);
-        stringBuilder.append(task.getClass().getSimpleName().toUpperCase()).append(sep);
-        stringBuilder.append(task.getName()).append(sep);
-        stringBuilder.append(task.getStatus()).append(sep);
-        stringBuilder.append(task.getDescription()).append(sep);
-        if (task instanceof Subtask) {
-            Subtask subtask = (Subtask) task;
-            stringBuilder.append(subtask.getEpic().getId());
-        }
-        return stringBuilder.toString();
+        return String.format("%d,%S,%s,%s,%s,%s",
+                                task.getId(),
+                                task.getClass().getSimpleName(),
+                                task.getName(),
+                                task.getStatus(),
+                                task.getDescription(),
+                                ((task instanceof Subtask) ? ((Subtask) task).getEpic().getId() : "")
+                            );
     }
 }
