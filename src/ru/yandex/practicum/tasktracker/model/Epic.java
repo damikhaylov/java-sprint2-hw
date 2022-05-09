@@ -7,7 +7,8 @@ public class Epic extends Task {
     final private Set<Integer> subtasksIdSet; // множество, содержащее идентификаторы подзадач
 
     public Epic(int id, String name, String description) {
-        super(id, name, TaskStatus.NEW, description);
+        super(id, name, null, description);
+        status = TaskStatus.NEW;
         subtasksIdSet = new HashSet<>();
     }
 
