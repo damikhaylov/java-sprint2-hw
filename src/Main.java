@@ -91,14 +91,10 @@ public class Main {
 
     private static void printHistory(List<Task> history) {
         for (Task anyTypeTask : history) {
-            System.out.print(anyTypeTask.getId() + " " + anyTypeTask.getName());
-            if (anyTypeTask.getClass() == Epic.class) {
-                System.out.println(" (эпик)");
-            } else if (anyTypeTask.getClass() == Subtask.class) {
-                System.out.println(" (подзадача)");
-            } else {
-                System.out.println(" (задача)");
-            }
+            System.out.printf("%d %s (%S)%n",
+                    anyTypeTask.getId(),
+                    anyTypeTask.getName(),
+                    anyTypeTask.getClass().getSimpleName());
         }
     }
 }
