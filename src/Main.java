@@ -91,10 +91,7 @@ public class Main {
 
     private static void printHistory(List<Task> history) {
         for (Task anyTypeTask : history) {
-            System.out.printf("%d %s (%S)%n",
-                    anyTypeTask.getId(),
-                    anyTypeTask.getName(),
-                    anyTypeTask.getClass().getSimpleName());
+            System.out.println(FileBackedTasksManager.toString(anyTypeTask));
         }
     }
 }
