@@ -6,11 +6,15 @@ import ru.yandex.practicum.tasktracker.model.Epic;
 import ru.yandex.practicum.tasktracker.model.Subtask;
 import ru.yandex.practicum.tasktracker.model.Task;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FileBackedTasksManager extends InMemoryTaskManager implements TaskManager {
 
@@ -18,16 +22,19 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     private static final String CSV_HEAD = "id,type,name,status,description,epic";
 
     public static void main(String[] args) {
-        TaskManager taskManager = new FileBackedTasksManager();
+        FileBackedTasksManager taskManager = new FileBackedTasksManager();
         TestScenario test = new TestScenario(taskManager);
         test.Add2Tasks2Epics3Subtasks();
         test.View2Tasks1Epic();
+        taskManager.save();
     }
 
     public void save() {
-        String csv = getCSVForAllTasks();
+        StringBuilder stringBuilder = new StringBuilder(getCSVForAllTasks());
+        stringBuilder.append("\n");
+        stringBuilder.append(toString(this.getHistoryManager()));
         try (Writer fileWriter = new FileWriter(FILE_NAME)) {
-            fileWriter.write(csv);
+            fileWriter.write(stringBuilder.toString());
         } catch (IOException exception) {
         }
     }
@@ -41,6 +48,22 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
             stringBuilder.append(toString(task)).append("\n");
         }
         return stringBuilder.toString();
+    }
+
+    static private String toString(HistoryManager manager) {
+        return manager.getHistory().stream().map(x -> String.valueOf(x.getId()))
+                .collect(Collectors.joining(","));
+    }
+
+    static public String toString(Task task) {
+        return String.format("%d,%S,%s,%s,%s,%s",
+                task.getId(),
+                task.getClass().getSimpleName(),
+                task.getName(),
+                task.getStatus(),
+                task.getDescription(),
+                ((task instanceof Subtask) ? ((Subtask) task).getEpic().getId() : "")
+        );
     }
 
     @Override
@@ -95,14 +118,5 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         save();
     }
 
-    static public String toString(Task task) {
-        return String.format("%d,%S,%s,%s,%s,%s",
-                task.getId(),
-                task.getClass().getSimpleName(),
-                task.getName(),
-                task.getStatus(),
-                task.getDescription(),
-                ((task instanceof Subtask) ? ((Subtask) task).getEpic().getId() : "")
-        );
-    }
+
 }

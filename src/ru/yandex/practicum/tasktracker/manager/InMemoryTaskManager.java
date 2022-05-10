@@ -249,6 +249,8 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
+    protected HistoryManager getHistoryManager() { return historyManager; }
+
     /**
      * Назначает статус эпика на основе статусов его подзадач
      */
