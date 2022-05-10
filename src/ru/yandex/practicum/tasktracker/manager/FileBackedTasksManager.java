@@ -16,7 +16,6 @@ import java.util.Comparator;
 import java.util.stream.Collectors;
 
 public class FileBackedTasksManager extends InMemoryTaskManager implements TaskManager {
-
     private static final String FILE_NAME = "tasks.csv";
     private static final String CSV_HEAD = "id,type,name,status,description,epic";
     private static final int TASK_FIELDS_COUNT = 6;
@@ -24,17 +23,28 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     private static final int DATA_FILE_HISTORY_LINES_COUNT = 2;
 
     public static void main(String[] args) {
-        FileBackedTasksManager taskManager = new FileBackedTasksManager();
+        FileBackedTasksManager taskManager = new FileBackedTasksManager(); // первый менеджер для добавления данных
+
         // Использование методов специально созданного класса TestScenario для добавления тестовых данных
         TestScenario test = new TestScenario(taskManager);
         test.Add2Tasks2Epics3Subtasks(); // добавление двух задач, двух эпиков и трёх подзадач
         test.View2Tasks1Epic(); // имитация просмотра двух задач и эпика
 
-        FileBackedTasksManager newTaskManager = loadFromFile(new File(FILE_NAME));
+        System.out.printf("%n>>>>> Тестовые данные были добавлены в менеджер и сохранены в файл %s%n%n", FILE_NAME);
+
+        FileBackedTasksManager newTaskManager = loadFromFile(new File(FILE_NAME)); // новый менеджер для считывания
+
+        System.out.printf(">>>>> Тестовые данные загружены в новый менеджер из файла %s%n%n", FILE_NAME);
+
+        System.out.println(">>>>> Список задач (подгружен из нового менеджера):");
         System.out.println(newTaskManager.getCSVForAllTasks());
+        System.out.println(">>>>> История просмотров (подгружена из нового менеджера):");
         System.out.println(toString(newTaskManager.getHistoryManager()));
     }
 
+    /**
+     * Метод сохраняет задачи и историю просмотров в файл
+     */
     public void save() {
         StringBuilder stringBuilder = new StringBuilder(getCSVForAllTasks());
         stringBuilder.append("\n");
@@ -46,6 +56,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         }
     }
 
+    /**
+     * Метод формирует и возвращает строку с данными всех задач менеджера в формате csv, первая строка содержит
+     * заголовки полей
+     */
     private String getCSVForAllTasks() {
         List<Task> tasks = new ArrayList<>(getTasks());
         tasks.addAll(getEpics());
@@ -58,11 +72,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         return stringBuilder.toString();
     }
 
-    static public String toString(HistoryManager manager) {
-        return manager.getHistory().stream().map(x -> String.valueOf(x.getId()))
-                .collect(Collectors.joining(","));
-    }
-
+    /**
+     * Метод формирует и возвращает строку с данными переданной в метод задачи (разделены запятыми)
+     */
     static public String toString(Task task) {
         return String.format("%d,%S,%s,%s,%s,%s",
                 task.getId(),
@@ -74,17 +86,31 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         );
     }
 
-    Task fromString(String value) {
+    /**
+     * Метод формирует и возвращает строку с id задач из истории просмотров, разделённых запятыми
+     */
+    static public String toString(HistoryManager manager) {
+        return manager.getHistory().stream().map(x -> String.valueOf(x.getId()))
+                .collect(Collectors.joining(","));
+    }
+
+    /**
+     * Метод создаёт и возвращает задачу (эпик, подзадачу) на основании данных, переданных в строке csv-формата
+     */
+    private Task fromString(String value) {
         int id;
         TaskType type;
         TaskStatus status;
         int epicId;
+
         String[] fields = value.split(",", -1);
+
         if (fields.length != TASK_FIELDS_COUNT) {
             throw new ManagerLoadException(
                     String.format("Некорректное число полей данных задачи ( = %d) в строке:%n%s",
                             fields.length, value));
         }
+
         try {
             id = Integer.parseInt(fields[0]);
             type = TaskType.valueOf(fields[1]);
@@ -93,8 +119,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         } catch (IllegalArgumentException exception) {
             throw new ManagerLoadException(String.format("Ошибка в формате данных в строке:%n%s", value));
         }
+
         String name = fields[2];
         String description = fields[4];
+
         if (type == TaskType.EPIC) {
             return new Epic(id, name, status, description);
         } else if (type == TaskType.SUBTASK) {
@@ -112,6 +140,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         }
     }
 
+    /**
+     * Метод создаёт и возвращает список с id зачач из истории просмотра на основании данных, переданных
+     * в строке csv-формата
+     */
     static List<Integer> historyFromString(String value) {
         List<Integer> historyTasksId = new ArrayList<>();
         String[] history = value.split(",");
@@ -126,7 +158,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         return historyTasksId;
     }
 
-    static public FileBackedTasksManager loadFromFile(File file) {
+    /**
+     * Метод создаёт м возвращает менеджер, заполняя его данными из csv-файла
+     */
+    static private FileBackedTasksManager loadFromFile(File file) {
         FileBackedTasksManager taskManager = new FileBackedTasksManager();
         String csv;
         try {
