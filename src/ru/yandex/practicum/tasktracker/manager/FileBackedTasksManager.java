@@ -32,6 +32,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
 
         FileBackedTasksManager newTaskManager = loadFromFile(new File(FILE_NAME));
         System.out.println(newTaskManager.getCSVForAllTasks());
+        System.out.println(toString(newTaskManager.getHistoryManager()));
     }
 
     public void save() {
@@ -57,7 +58,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         return stringBuilder.toString();
     }
 
-    static private String toString(HistoryManager manager) {
+    static public String toString(HistoryManager manager) {
         return manager.getHistory().stream().map(x -> String.valueOf(x.getId()))
                 .collect(Collectors.joining(","));
     }
@@ -74,7 +75,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     }
 
     Task fromString(String value) {
-        Task task;
         int id;
         TaskType type;
         TaskStatus status;
@@ -102,6 +102,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
             if (epic == null) {
                 throw new ManagerLoadException(
                         String.format("Подзадача ссылается на несуществующий эпик в строке:%n%s", value));
+            } else {
+                // удаление запрошенного для формирования подзадачи эпика из истории просмотров
+                this.getHistoryManager().remove(epicId);
             }
             return new Subtask(id, name, status, description, epic);
         } else {
@@ -125,7 +128,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
 
     static public FileBackedTasksManager loadFromFile(File file) {
         FileBackedTasksManager taskManager = new FileBackedTasksManager();
-        String csv = null;
+        String csv;
         try {
             csv = Files.readString(file.toPath());
         } catch (IOException exception) {
@@ -135,6 +138,15 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         if (lines.length >= DATA_FILE_MIN_LINES_COUNT) {
             for (int i = 1; i < lines.length - DATA_FILE_HISTORY_LINES_COUNT; i++) {
                 taskManager.addTaskOfAnyType(taskManager.fromString(lines[i]));
+            }
+
+            List<Integer> historyTasksId = historyFromString(lines[lines.length - 1]);
+            for (Integer id : historyTasksId) {
+                if (taskManager.getTask(id) == null) {
+                    if (taskManager.getSubtask(id) == null) {
+                        taskManager.getEpic(id);
+                    }
+                }
             }
         }
         return taskManager;
