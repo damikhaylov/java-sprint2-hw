@@ -1,5 +1,6 @@
 package ru.yandex.practicum.tasktracker.manager;
 
+import ru.yandex.practicum.tasktracker.exeption.ManagerSaveException;
 import ru.yandex.practicum.tasktracker.test.TestScenario;
 
 import ru.yandex.practicum.tasktracker.model.Epic;
@@ -36,6 +37,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         try (Writer fileWriter = new FileWriter(FILE_NAME)) {
             fileWriter.write(stringBuilder.toString());
         } catch (IOException exception) {
+            throw new ManagerSaveException(String.format("Ошибка записи в файл %s.", FILE_NAME));
         }
     }
 
