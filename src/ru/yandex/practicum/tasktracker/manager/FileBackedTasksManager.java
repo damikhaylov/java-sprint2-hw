@@ -1,5 +1,7 @@
 package ru.yandex.practicum.tasktracker.manager;
 
+import ru.yandex.practicum.tasktracker.test.TestScenario;
+
 import ru.yandex.practicum.tasktracker.model.Epic;
 import ru.yandex.practicum.tasktracker.model.Subtask;
 import ru.yandex.practicum.tasktracker.model.Task;
@@ -14,6 +16,13 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
 
     private static final String FILE_NAME = "tasks.csv";
     private static final String CSV_HEAD = "id,type,name,status,description,epic";
+
+    public static void main(String[] args) {
+        TaskManager taskManager = new FileBackedTasksManager();
+        TestScenario test = new TestScenario(taskManager);
+        test.Add2Tasks2Epics3Subtasks();
+        test.View2Tasks1Epic();
+    }
 
     public void save() {
         String csv = getCSVForAllTasks();
