@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,6 +42,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         List<Task> tasks = new ArrayList<>(getTasks());
         tasks.addAll(getEpics());
         tasks.addAll(getSubtasks());
+        tasks.sort(Comparator.comparing(Task::getId));
         StringBuilder stringBuilder = new StringBuilder(CSV_HEAD).append("\n");
         for (Task task : tasks) {
             stringBuilder.append(toString(task)).append("\n");
