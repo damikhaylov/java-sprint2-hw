@@ -6,10 +6,14 @@ public class Epic extends Task {
     private TaskStatus status;
     final private Set<Integer> subtasksIdSet; // множество, содержащее идентификаторы подзадач
 
-    public Epic(int id, String name, String description) {
-        super(id, name, null, description);
-        status = TaskStatus.NEW;
+    public Epic(int id, String name, TaskStatus status, String description) {
+        super(id, name, description);
+        this.status = status;
         subtasksIdSet = new HashSet<>();
+    }
+
+    public Epic(int id, String name, String description) {
+        this(id, name, TaskStatus.NEW, description);
     }
 
     @Override

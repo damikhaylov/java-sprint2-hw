@@ -85,14 +85,12 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         String name = fields[2];
         String description = fields[4];
         if (type == TaskType.EPIC) {
-            task = new Epic(id, name, description);
-            ((Epic) task).setStatus(status);
+            return new Epic(id, name, status, description);
         } else if (type == TaskType.SUBTASK) {
-            task = new Subtask(id, name, status, description, this.getEpic(epicId));
+            return new Subtask(id, name, status, description, this.getEpic(epicId));
         } else {
-            task = new Task(id, name, status, description);
+            return new Task(id, name, status, description);
         }
-        return task;
     }
 
     @Override
