@@ -33,7 +33,7 @@ public class TestScenario {
         task = new Task(taskManager.getNextTaskId(), "Покормить кота", TaskStatus.NEW,
                 "Дать коту в обед четверть банки корма «Berkley»");
         idFeedTheCatTask = taskManager.addTaskOfAnyType(task);
-        task = new Task(taskManager.getNextTaskId(), "Попить чаю с булками", TaskStatus.NEW,
+        task = new Task(taskManager.getNextTaskId(), "Попить чаю с булками", TaskStatus.DONE,
                 "Съесть ещё этих мягких французских булок да выпить чаю");
         idEatBunsDrinkTeaTask = taskManager.addTaskOfAnyType(task);
 
@@ -41,24 +41,24 @@ public class TestScenario {
         epic = new Epic(taskManager.getNextTaskId(), "Запроектировать трёхэтажный каркас",
                 "Выполнить проект каркаса трёхэтажного административного здания");
         idDesignStructureEpic = taskManager.addTaskOfAnyType(epic);
-        subtask = new Subtask(taskManager.getNextTaskId(), "Рассчитать плоскую раму", TaskStatus.NEW,
+        subtask = new Subtask(taskManager.getNextTaskId(), "Рассчитать плоскую раму", TaskStatus.DONE,
                 "Выполнить статический расчёт плоской рамы и подобрать сечения элементов",
                 epic);
         idDesignFrameSubtask = taskManager.addTaskOfAnyType(subtask);
         subtask = new Subtask(taskManager.getNextTaskId(), "Выполнить пространственный расчёт",
-                TaskStatus.NEW,
+                TaskStatus.DONE,
                 "Выполнить пространственный расчёт с учётом действия пульсационных ветровых нагрузок",
                 epic);
         idDesign3DSubtask = taskManager.addTaskOfAnyType(subtask);
         subtask = new Subtask(taskManager.getNextTaskId(), "Сделать чертёж",
-                TaskStatus.NEW,
+                TaskStatus.DONE,
                 "Сделать чертёж со схемой каркаса",
                 epic);
         idMakeDrawing = taskManager.addTaskOfAnyType(subtask);
 
         // Создание эпика без подзадач
         epic = new Epic(taskManager.getNextTaskId(), "Выполнить ТО автомобиля",
-                null);
+                "Выполнить техобслуживание автомобиля");
         idCarMaintenanceEpic = taskManager.addTaskOfAnyType(epic);
     }
 

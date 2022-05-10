@@ -172,6 +172,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
      * Метод создаёт и возвращает менеджер, заполняя его данными из файла формата csv
      */
     static private FileBackedTasksManager loadFromFile(File file) {
+        // Менеджер будет создаваться с автосохранением в файл, отличный от того, из которого загружаются данные
+        // (файл будет создан в той же директории, но с префиксом new)
         String directoryPath = Paths.get(file.getAbsolutePath()).getParent().toString();
         String newFileName = Paths.get(directoryPath, "new" + file.getName()).toString();
         FileBackedTasksManager taskManager = new FileBackedTasksManager(new File(newFileName));
