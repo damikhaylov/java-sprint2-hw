@@ -11,32 +11,39 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.io.IOException;
 
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
 public class FileBackedTasksManager extends InMemoryTaskManager implements TaskManager {
-    private static final String FILE_NAME = "tasks.csv";
     private static final String CSV_HEAD = "id,type,name,status,description,epic";
     private static final int TASK_FIELDS_COUNT = 6;
     private static final int DATA_FILE_MIN_LINES_COUNT = 4; // минимальное число строк в файле csv: заголовки, строка
                                                             // задачи, строка-разделитель, строка истории просмотров
     private static final int DATA_FILE_HISTORY_LINES_COUNT = 2;
 
-    public static void main(String[] args) {
-        FileBackedTasksManager taskManager = new FileBackedTasksManager(); // первый менеджер для добавления данных
+    private final File file;
 
+    FileBackedTasksManager(File file) {
+        this.file = file;
+    }
+
+    public static void main(String[] args) {
+        String fileName = "tasks.csv";
+        // Создание первого менеджера для добавления данных
+        FileBackedTasksManager taskManager = new FileBackedTasksManager(new File(fileName));
         // Использование методов специально созданного класса TestScenario для добавления тестовых данных
         TestScenario test = new TestScenario(taskManager);
         test.Add2Tasks2Epics3Subtasks(); // добавление двух задач, двух эпиков и трёх подзадач
         test.View2Tasks1Epic(); // имитация просмотра двух задач и эпика
 
-        System.out.printf("%n>>>>> Тестовые данные были добавлены в менеджер и сохранены в файл %s%n%n", FILE_NAME);
+        System.out.printf("%n>>>>> Тестовые данные были добавлены в менеджер и сохранены в файл %s%n%n", fileName);
 
-        FileBackedTasksManager newTaskManager = loadFromFile(new File(FILE_NAME)); // новый менеджер для считывания
+        FileBackedTasksManager newTaskManager = loadFromFile(new File(fileName)); // новый менеджер для считывания
 
-        System.out.printf(">>>>> Тестовые данные загружены в новый менеджер из файла %s%n%n", FILE_NAME);
+        System.out.printf(">>>>> Тестовые данные загружены в новый менеджер из файла %s%n%n", fileName);
 
         System.out.println(">>>>> Список задач (подгружен из нового менеджера):");
         System.out.println(newTaskManager.getCSVForAllTasks());
@@ -48,13 +55,14 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
      * Метод сохраняет задачи и историю просмотров в файл
      */
     public void save() {
+        String fileName = file.getName();
         StringBuilder stringBuilder = new StringBuilder(getCSVForAllTasks());
         stringBuilder.append("\n");
         stringBuilder.append(toString(this.getHistoryManager()));
-        try (Writer fileWriter = new FileWriter(FILE_NAME, StandardCharsets.UTF_8)) {
+        try (Writer fileWriter = new FileWriter(fileName, StandardCharsets.UTF_8)) {
             fileWriter.write(stringBuilder.toString());
         } catch (IOException exception) {
-            throw new ManagerSaveException(String.format("Ошибка записи в файл %s.", FILE_NAME));
+            throw new ManagerSaveException(String.format("Ошибка записи в файл %s.", fileName));
         }
     }
 
@@ -164,7 +172,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
      * Метод создаёт и возвращает менеджер, заполняя его данными из файла формата csv
      */
     static private FileBackedTasksManager loadFromFile(File file) {
-        FileBackedTasksManager taskManager = new FileBackedTasksManager();
+        String directoryPath = Paths.get(file.getAbsolutePath()).getParent().toString();
+        String newFileName = Paths.get(directoryPath, "new" + file.getName()).toString();
+        FileBackedTasksManager taskManager = new FileBackedTasksManager(new File(newFileName));
+
         String csv;
         try {
             csv = Files.readString(file.toPath(), StandardCharsets.UTF_8);
