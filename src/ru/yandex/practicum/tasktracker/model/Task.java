@@ -11,8 +11,12 @@ public class Task {
     public Task(int id, String name, TaskStatus status, String description) {
         this.id = id;
         this.name = name;
-        this.status = (status != null) ? status : TaskStatus.NEW;
+        this.status = status;
         this.description = description;
+    }
+
+    public Task(int id, String name, String description) {
+        this(id, name, TaskStatus.NEW, description);
     }
 
     public int getId() {
