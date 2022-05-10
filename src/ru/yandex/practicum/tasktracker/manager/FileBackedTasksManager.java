@@ -13,14 +13,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class FileBackedTasksManager extends InMemoryTaskManager implements TaskManager {
     private static final String FILE_NAME = "tasks.csv";
     private static final String CSV_HEAD = "id,type,name,status,description,epic";
     private static final int TASK_FIELDS_COUNT = 6;
-    private static final int DATA_FILE_MIN_LINES_COUNT = 4;
+    private static final int DATA_FILE_MIN_LINES_COUNT = 4; // минимальное число строк в файле csv: заголовки, строка
+                                                            // задачи, строка-разделитель, строка истории просмотров
     private static final int DATA_FILE_HISTORY_LINES_COUNT = 2;
 
     public static void main(String[] args) {
@@ -142,7 +142,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     }
 
     /**
-     * Метод создаёт и возвращает список с id зачач из истории просмотра на основании данных, переданных
+     * Метод создаёт и возвращает список с id задач из истории просмотра на основании данных, переданных
      * в строке csv-формата
      */
     static List<Integer> historyFromString(String value) {
@@ -160,7 +160,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     }
 
     /**
-     * Метод создаёт м возвращает менеджер, заполняя его данными из csv-файла
+     * Метод создаёт и возвращает менеджер, заполняя его данными из файла формата csv
      */
     static private FileBackedTasksManager loadFromFile(File file) {
         FileBackedTasksManager taskManager = new FileBackedTasksManager();
