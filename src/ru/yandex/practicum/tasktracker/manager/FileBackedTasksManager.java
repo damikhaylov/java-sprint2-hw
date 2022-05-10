@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class FileBackedTasksManager extends InMemoryTaskManager implements TaskManager {
@@ -76,13 +77,13 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
      * Метод формирует и возвращает строку с данными переданной в метод задачи (разделены запятыми)
      */
     static public String toString(Task task) {
-        return String.format("%d,%S,%s,%s,%s,%s",
-                task.getId(),
-                task.getClass().getSimpleName(),
+        return String.join(",",
+                String.valueOf(task.getId()),
+                task.getClass().getSimpleName().toUpperCase(),
                 task.getName(),
-                task.getStatus(),
+                String.valueOf(task.getStatus()),
                 task.getDescription(),
-                ((task instanceof Subtask) ? ((Subtask) task).getEpic().getId() : "")
+                ((task instanceof Subtask) ? String.valueOf(((Subtask) task).getEpic().getId()) : "")
         );
     }
 
