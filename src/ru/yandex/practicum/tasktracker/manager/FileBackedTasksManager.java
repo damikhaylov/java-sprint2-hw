@@ -25,10 +25,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
 
     public static void main(String[] args) {
         FileBackedTasksManager taskManager = new FileBackedTasksManager();
+        // Использование методов специально созданного класса TestScenario для добавления тестовых данных
         TestScenario test = new TestScenario(taskManager);
-        test.Add2Tasks2Epics3Subtasks();
-        test.View2Tasks1Epic();
-        taskManager.save();
+        test.Add2Tasks2Epics3Subtasks(); // добавление двух задач, двух эпиков и трёх подзадач
+        test.View2Tasks1Epic(); // имитация просмотра двух задач и эпика
 
         FileBackedTasksManager newTaskManager = loadFromFile(new File(FILE_NAME));
         System.out.println(newTaskManager.getCSVForAllTasks());
@@ -152,6 +152,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         return taskManager;
     }
 
+    // Методы, изменяющие задачи, переопределяются, чтобы при каждом изменении происходило автосохранение в файл.
+
     @Override
     public void removeAllTasks() {
         super.removeAllTasks();
@@ -204,5 +206,27 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         save();
     }
 
+    // Методы просмотра задач также переопределяются, поскольку они вызывают изменение истории просмотров. Изменения
+    // в истории просмотров, таким образом, тоже автосохраняются в файл.
 
+    @Override
+    public Task getTask(int id) {
+        Task task = super.getTask(id);
+        save();
+        return task;
+    }
+
+    @Override
+    public Epic getEpic(int id) {
+        Epic epic = super.getEpic(id);
+        save();
+        return epic;
+    }
+
+    @Override
+    public Subtask getSubtask(int id) {
+        Subtask subtask = super.getSubtask(id);
+        save();
+        return subtask;
+    }
 }

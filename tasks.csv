@@ -7,3 +7,4 @@ id,type,name,status,description,epic
 6,SUBTASK,Сделать чертёж,NEW,Сделать чертёж со схемой каркаса,3
 7,EPIC,Выполнить ТО автомобиля,NEW,null,
 
+1,2,7
