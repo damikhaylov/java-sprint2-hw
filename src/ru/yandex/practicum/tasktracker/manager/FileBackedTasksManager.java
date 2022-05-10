@@ -1,18 +1,13 @@
 package ru.yandex.practicum.tasktracker.manager;
 
+import ru.yandex.practicum.tasktracker.exeption.ManagerLoadException;
 import ru.yandex.practicum.tasktracker.exeption.ManagerSaveException;
+import ru.yandex.practicum.tasktracker.model.*;
 import ru.yandex.practicum.tasktracker.test.TestScenario;
 
-import ru.yandex.practicum.tasktracker.model.Epic;
-import ru.yandex.practicum.tasktracker.model.Subtask;
-import ru.yandex.practicum.tasktracker.model.Task;
-
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +16,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
 
     private static final String FILE_NAME = "tasks.csv";
     private static final String CSV_HEAD = "id,type,name,status,description,epic";
+    private static final int TASK_FIELDS_COUNT = 6;
 
     public static void main(String[] args) {
         FileBackedTasksManager taskManager = new FileBackedTasksManager();
@@ -66,6 +62,37 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
                 task.getDescription(),
                 ((task instanceof Subtask) ? ((Subtask) task).getEpic().getId() : "")
         );
+    }
+
+    Task fromString(String value) {
+        Task task;
+        int id;
+        TaskType type;
+        TaskStatus status;
+        int epicId;
+        String [] fields = value.split(",");
+        if (fields.length != TASK_FIELDS_COUNT) {
+            throw new ManagerLoadException("Ошибка формата описания задачи.");
+        }
+        try {
+            type = TaskType.valueOf(fields[0]);
+            id = Integer.parseInt(fields[1]);
+            status = TaskStatus.valueOf(fields[3]);
+            epicId = (type == TaskType.SUBTASK) ? Integer.parseInt(fields[5]) : 0;
+        } catch (IllegalArgumentException exception) {
+            throw new ManagerLoadException("Ошибка формата описания задачи.");
+        }
+        String name = fields[2];
+        String description = fields[4];
+        if (type == TaskType.EPIC) {
+            task = new Epic(id, name, description);
+            ((Epic) task).setStatus(status);
+        } else if (type == TaskType.SUBTASK) {
+            task = new Subtask(id, name, status, description, this.getEpic(epicId));
+        } else {
+            task = new Task(id, name, status, description);
+        }
+        return task;
     }
 
     @Override
