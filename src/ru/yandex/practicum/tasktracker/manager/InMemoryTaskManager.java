@@ -139,31 +139,34 @@ public class InMemoryTaskManager implements TaskManager {
      */
     @Override
     public int addTaskOfAnyType(Task task) {
-        int id = task.getId();
-        if  (task != null
-                && !tasks.containsKey(id)   // проверка, не занят ли переданный id
-                && !epics.containsKey(id)
-                && !subtasks.containsKey(id)
-            )
-        {
-            // Номер следующей задачи будет на 1 больше максимума из хранимого номера следующей задачи и переданного id
-            nextTaskId = (id > nextTaskId) ? ++id : ++nextTaskId;
-            if (task.getClass() == Epic.class) {
-                epics.put(task.getId(), (Epic) task);
-                return task.getId();
-            } else if (task.getClass() == Subtask.class) {
-                Subtask subtask = (Subtask) task;
-                Epic epic = subtask.getEpic();
-                subtasks.put(subtask.getId(), subtask);
-                epic.getSubtasksIdSet().add(subtask.getId());
-                setEpicStatusBySubtasks(epic);
-                return subtask.getId();
-            } else {
-                tasks.put(task.getId(), task);
-                return task.getId();
-            }
+        if (task == null) {
+            return 0;
         }
-        return 0;
+
+        int id = task.getId();
+
+        // Проверка, не занят ли переданный id
+        if (tasks.containsKey(id) || epics.containsKey(id) || subtasks.containsKey(id)) {
+            return 0;
+        }
+
+        // Номер следующей задачи будет на 1 больше максимума из хранимого номера следующей задачи и переданного id
+        nextTaskId = (id > nextTaskId) ? ++id : ++nextTaskId;
+
+        if (task.getClass() == Epic.class) {
+            epics.put(task.getId(), (Epic) task);
+            return task.getId();
+        } else if (task.getClass() == Subtask.class) {
+            Subtask subtask = (Subtask) task;
+            Epic epic = subtask.getEpic();
+            subtasks.put(subtask.getId(), subtask);
+            epic.getSubtasksIdSet().add(subtask.getId());
+            setEpicStatusBySubtasks(epic);
+            return subtask.getId();
+        } else {
+            tasks.put(task.getId(), task);
+            return task.getId();
+        }
     }
 
     /**
@@ -256,7 +259,9 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
-    protected HistoryManager getHistoryManager() { return historyManager; }
+    protected HistoryManager getHistoryManager() {
+        return historyManager;
+    }
 
     /**
      * Назначает статус эпика на основе статусов его подзадач
