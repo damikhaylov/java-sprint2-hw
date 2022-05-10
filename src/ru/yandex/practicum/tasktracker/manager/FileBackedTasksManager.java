@@ -7,6 +7,7 @@ import ru.yandex.practicum.tasktracker.test.TestScenario;
 import java.io.File;
 import java.io.Writer;
 import java.io.FileWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.io.IOException;
 
@@ -50,7 +51,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         StringBuilder stringBuilder = new StringBuilder(getCSVForAllTasks());
         stringBuilder.append("\n");
         stringBuilder.append(toString(this.getHistoryManager()));
-        try (Writer fileWriter = new FileWriter(FILE_NAME)) {
+        try (Writer fileWriter = new FileWriter(FILE_NAME, StandardCharsets.UTF_8)) {
             fileWriter.write(stringBuilder.toString());
         } catch (IOException exception) {
             throw new ManagerSaveException(String.format("Ошибка записи в файл %s.", FILE_NAME));
@@ -166,7 +167,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         FileBackedTasksManager taskManager = new FileBackedTasksManager();
         String csv;
         try {
-            csv = Files.readString(file.toPath());
+            csv = Files.readString(file.toPath(), StandardCharsets.UTF_8);
         } catch (IOException exception) {
             throw new ManagerLoadException(String.format("Ошибка чтения файла %s.", file.toPath()));
         }
