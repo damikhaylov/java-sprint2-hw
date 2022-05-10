@@ -29,6 +29,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         test.Add2Tasks2Epics3Subtasks();
         test.View2Tasks1Epic();
         taskManager.save();
+
+        FileBackedTasksManager newTaskManager = loadFromFile(new File(FILE_NAME));
+        System.out.println(newTaskManager.getCSVForAllTasks());
     }
 
     public void save() {
@@ -76,27 +79,30 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         TaskType type;
         TaskStatus status;
         int epicId;
-        String [] fields = value.split(",");
+        String[] fields = value.split(",", -1);
         if (fields.length != TASK_FIELDS_COUNT) {
-            throw new ManagerLoadException("Некорректное число полей данных задачи.");
+            throw new ManagerLoadException(
+                    String.format("Некорректное число полей данных задачи ( = %d) в строке:%n%s",
+                            fields.length, value));
         }
         try {
-            type = TaskType.valueOf(fields[0]);
-            id = Integer.parseInt(fields[1]);
+            id = Integer.parseInt(fields[0]);
+            type = TaskType.valueOf(fields[1]);
             status = TaskStatus.valueOf(fields[3]);
             epicId = (type == TaskType.SUBTASK) ? Integer.parseInt(fields[5]) : 0;
         } catch (IllegalArgumentException exception) {
-            throw new ManagerLoadException("Ошибка в формате данных задачи.");
-        }
-        Epic epic = this.getEpic(epicId);
-        if (epic == null) {
-            throw new ManagerLoadException("Подзадача ссылается на несуществующий эпик.");
+            throw new ManagerLoadException(String.format("Ошибка в формате данных в строке:%n%s", value));
         }
         String name = fields[2];
         String description = fields[4];
         if (type == TaskType.EPIC) {
             return new Epic(id, name, status, description);
         } else if (type == TaskType.SUBTASK) {
+            Epic epic = this.getEpic(epicId);
+            if (epic == null) {
+                throw new ManagerLoadException(
+                        String.format("Подзадача ссылается на несуществующий эпик в строке:%n%s", value));
+            }
             return new Subtask(id, name, status, description, epic);
         } else {
             return new Task(id, name, status, description);
@@ -106,7 +112,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     static public FileBackedTasksManager loadFromFile(File file) {
         FileBackedTasksManager taskManager = new FileBackedTasksManager();
         String csv = null;
-        try  {
+        try {
             csv = Files.readString(file.toPath());
         } catch (IOException exception) {
             throw new ManagerLoadException(String.format("Ошибка чтения файла %s.", file.toPath()));
