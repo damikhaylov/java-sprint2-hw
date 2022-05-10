@@ -5,9 +5,11 @@ import ru.yandex.practicum.tasktracker.exeption.ManagerSaveException;
 import ru.yandex.practicum.tasktracker.model.*;
 import ru.yandex.practicum.tasktracker.test.TestScenario;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -18,6 +20,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     private static final String FILE_NAME = "tasks.csv";
     private static final String CSV_HEAD = "id,type,name,status,description,epic";
     private static final int TASK_FIELDS_COUNT = 6;
+    private static final int DATA_FILE_MIN_LINES_COUNT = 4;
+    private static final int DATA_FILE_HISTORY_LINES_COUNT = 2;
 
     public static void main(String[] args) {
         FileBackedTasksManager taskManager = new FileBackedTasksManager();
@@ -74,7 +78,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         int epicId;
         String [] fields = value.split(",");
         if (fields.length != TASK_FIELDS_COUNT) {
-            throw new ManagerLoadException("Ошибка формата описания задачи.");
+            throw new ManagerLoadException("Некорректное число полей данных задачи.");
         }
         try {
             type = TaskType.valueOf(fields[0]);
@@ -82,17 +86,38 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
             status = TaskStatus.valueOf(fields[3]);
             epicId = (type == TaskType.SUBTASK) ? Integer.parseInt(fields[5]) : 0;
         } catch (IllegalArgumentException exception) {
-            throw new ManagerLoadException("Ошибка формата описания задачи.");
+            throw new ManagerLoadException("Ошибка в формате данных задачи.");
+        }
+        Epic epic = this.getEpic(epicId);
+        if (epic == null) {
+            throw new ManagerLoadException("Подзадача ссылается на несуществующий эпик.");
         }
         String name = fields[2];
         String description = fields[4];
         if (type == TaskType.EPIC) {
             return new Epic(id, name, status, description);
         } else if (type == TaskType.SUBTASK) {
-            return new Subtask(id, name, status, description, this.getEpic(epicId));
+            return new Subtask(id, name, status, description, epic);
         } else {
             return new Task(id, name, status, description);
         }
+    }
+
+    static public FileBackedTasksManager loadFromFile(File file) {
+        FileBackedTasksManager taskManager = new FileBackedTasksManager();
+        String csv = null;
+        try  {
+            csv = Files.readString(file.toPath());
+        } catch (IOException exception) {
+            throw new ManagerLoadException(String.format("Ошибка чтения файла %s.", file.toPath()));
+        }
+        String[] lines = csv.split("\\n");
+        if (lines.length >= DATA_FILE_MIN_LINES_COUNT) {
+            for (int i = 1; i < lines.length - DATA_FILE_HISTORY_LINES_COUNT; i++) {
+                taskManager.addTaskOfAnyType(taskManager.fromString(lines[i]));
+            }
+        }
+        return taskManager;
     }
 
     @Override

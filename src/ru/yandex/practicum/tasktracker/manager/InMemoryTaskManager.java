@@ -141,11 +141,12 @@ public class InMemoryTaskManager implements TaskManager {
     public int addTaskOfAnyType(Task task) {
         int id = task.getId();
         if  (task != null
-                && !tasks.containsKey(id)
+                && !tasks.containsKey(id)   // проверка, не занят ли переданный id
                 && !epics.containsKey(id)
                 && !subtasks.containsKey(id)
             )
         {
+            // Номер следующей задачи будет на 1 больше максимума из хранимого номера следующей задачи и переданного id
             nextTaskId = (id > nextTaskId) ? ++id : ++nextTaskId;
             if (task.getClass() == Epic.class) {
                 epics.put(task.getId(), (Epic) task);
