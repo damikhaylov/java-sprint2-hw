@@ -139,8 +139,14 @@ public class InMemoryTaskManager implements TaskManager {
      */
     @Override
     public int addTaskOfAnyType(Task task) {
-        if (task != null && task.getId() == nextTaskId) {
-            nextTaskId++;
+        int id = task.getId();
+        if  (task != null
+                && !tasks.containsKey(id)
+                && !epics.containsKey(id)
+                && !subtasks.containsKey(id)
+            )
+        {
+            nextTaskId = (id > nextTaskId) ? ++id : ++nextTaskId;
             if (task.getClass() == Epic.class) {
                 epics.put(task.getId(), (Epic) task);
                 return task.getId();
