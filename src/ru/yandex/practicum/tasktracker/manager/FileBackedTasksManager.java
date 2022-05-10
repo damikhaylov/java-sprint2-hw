@@ -109,6 +109,20 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         }
     }
 
+    static List<Integer> historyFromString(String value) {
+        List<Integer> historyTasksId = new ArrayList<>();
+        String[] history = value.split(",");
+        for (String id : history) {
+            try {
+                historyTasksId.add(Integer.valueOf(id));
+            } catch (NumberFormatException exception) {
+                throw new ManagerLoadException(
+                        String.format("Идентификатор задачи в истории просмотров - не целое число: %s", id));
+            }
+        }
+        return historyTasksId;
+    }
+
     static public FileBackedTasksManager loadFromFile(File file) {
         FileBackedTasksManager taskManager = new FileBackedTasksManager();
         String csv = null;
