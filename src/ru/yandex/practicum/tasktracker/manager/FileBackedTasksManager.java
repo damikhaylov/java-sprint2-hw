@@ -62,7 +62,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         try (Writer fileWriter = new FileWriter(fileName, StandardCharsets.UTF_8)) {
             fileWriter.write(stringBuilder.toString());
         } catch (IOException exception) {
-            throw new ManagerSaveException(String.format("Ошибка записи в файл %s.", fileName));
+            throw new ManagerSaveException(String.format("Ошибка записи в файл %s.", fileName), exception);
         }
     }
 
@@ -116,9 +116,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         String[] fields = value.split(",", -1);
 
         if (fields.length != TASK_FIELDS_COUNT) {
-            throw new ManagerLoadException(
-                    String.format("Некорректное число полей данных задачи ( = %d) в строке:%n%s",
-                            fields.length, value));
+            throw new ManagerLoadException(String.format("Некорректное число полей данных задачи ( = %d) в строке:%n%s",
+                                                         fields.length, value));
         }
 
         try {
@@ -127,7 +126,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
             status = TaskStatus.valueOf(fields[3]);
             epicId = (type == TaskType.SUBTASK) ? Integer.parseInt(fields[5]) : 0;
         } catch (IllegalArgumentException exception) {
-            throw new ManagerLoadException(String.format("Ошибка в формате данных в строке:%n%s", value));
+            throw new ManagerLoadException(String.format("Ошибка в формате данных в строке:%n%s", value), exception);
         }
 
         String name = fields[2];
@@ -162,7 +161,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
                 historyTasksId.add(Integer.valueOf(id));
             } catch (NumberFormatException exception) {
                 throw new ManagerLoadException(
-                        String.format("Идентификатор задачи в истории просмотров - не целое число: %s", id));
+                        String.format("Идентификатор задачи в истории просмотров - не целое число: %s", id), exception);
             }
         }
         return historyTasksId;
@@ -182,7 +181,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         try {
             csv = Files.readString(file.toPath(), StandardCharsets.UTF_8);
         } catch (IOException exception) {
-            throw new ManagerLoadException(String.format("Ошибка чтения файла %s.", file.toPath()));
+            throw new ManagerLoadException(String.format("Ошибка чтения файла %s.", file.toPath()), exception);
         }
         String[] lines = csv.split("\\n");
         if (lines.length >= DATA_FILE_MIN_LINES_COUNT) {
