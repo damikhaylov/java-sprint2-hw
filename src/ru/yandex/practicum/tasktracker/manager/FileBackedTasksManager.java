@@ -77,7 +77,11 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         List<Task> tasks = new ArrayList<>(getTasks());
         tasks.addAll(getEpics());
         tasks.addAll(getSubtasks());
-        tasks.sort(Comparator.comparing(Task::getId));
+        // В примере к техзаданию список отсортирован, можно было предположить, что сортировка снимает проблемы с
+        // присвоением id при вставке элементов и добавлением подзадач с ещё не существующими эпиками. Но поскольку
+        // сортировка не предусмотрена текстом техзадания и увеличивает асимптотическую сложность программы, она
+        // больше не применяется, при этом усложнён алгоритм присвоения id, а также предусмотрена запись эпиков в файл
+        // строго раньше подзадач
         StringBuilder stringBuilder = new StringBuilder(CSV_HEAD).append("\n");
         for (Task task : tasks) {
             stringBuilder.append(toString(task)).append("\n");
