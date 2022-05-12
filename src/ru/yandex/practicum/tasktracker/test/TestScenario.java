@@ -124,6 +124,4 @@ public class TestScenario {
             System.out.println(FileBackedTasksManager.toString(anyTypeTask));
         }
     }
-
-
 }

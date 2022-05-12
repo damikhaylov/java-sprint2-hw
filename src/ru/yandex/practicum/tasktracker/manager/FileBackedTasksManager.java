@@ -21,7 +21,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     private static final String CSV_HEAD = "id,type,name,status,description,epic";
     private static final int TASK_FIELDS_COUNT = 6;
     private static final int DATA_FILE_MIN_LINES_COUNT = 4; // минимальное число строк в файле csv: заголовки, строка
-                                                            // задачи, строка-разделитель, строка истории просмотров
+    // задачи, строка-разделитель, строка истории просмотров
     private static final int DATA_FILE_HISTORY_LINES_COUNT = 2;
 
     private final File file;
@@ -52,13 +52,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         System.out.println(newTaskManager.getCSVForAllTasks());
         System.out.println(">>>>> История просмотров (подгружена из нового менеджера):");
         System.out.println(toString(newTaskManager.getHistoryManager()));
-    }
-
-    /**
-     * Метод возвращает файл, в который сохраняются данные менеджера
-     */
-    public File getFile() {
-        return file;
     }
 
     /**
@@ -95,7 +88,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     /**
      * Метод формирует и возвращает строку с данными переданной в метод задачи (разделены запятыми)
      */
-    static public String toString(Task task) {
+    public static String toString(Task task) {
         return String.join(",",
                 String.valueOf(task.getId()),
                 task.getClass().getSimpleName().toUpperCase(),
@@ -109,7 +102,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     /**
      * Метод формирует и возвращает строку с id задач из истории просмотров, разделённых запятыми
      */
-    static public String toString(HistoryManager manager) {
+    public static String toString(HistoryManager manager) {
         return manager.getHistory().stream().map(x -> String.valueOf(x.getId()))
                 .collect(Collectors.joining(","));
     }
@@ -127,7 +120,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
         if (fields.length != TASK_FIELDS_COUNT) {
             throw new ManagerLoadException(String.format("Некорректное число полей данных задачи ( = %d) в строке:%n%s",
-                                                         fields.length, value));
+                    fields.length, value));
         }
 
         try {
@@ -163,7 +156,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
      * Метод создаёт и возвращает список с id задач из истории просмотра на основании данных, переданных
      * в строке csv-формата
      */
-    static List<Integer> historyFromString(String value) {
+    private static List<Integer> historyFromString(String value) {
         List<Integer> historyTasksId = new ArrayList<>();
         String[] history = value.split(",");
         for (String id : history) {
@@ -180,7 +173,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     /**
      * Метод создаёт и возвращает менеджер, заполняя его данными из файла формата csv
      */
-    static private FileBackedTasksManager loadFromFile(File file) {
+    private static FileBackedTasksManager loadFromFile(File file) {
         // Менеджер будет создаваться с автосохранением в файл, отличный от того, из которого загружаются данные
         // (файл будет создан в той же директории, но с префиксом new)
         String directoryPath = Paths.get(file.getAbsolutePath()).getParent().toString();
