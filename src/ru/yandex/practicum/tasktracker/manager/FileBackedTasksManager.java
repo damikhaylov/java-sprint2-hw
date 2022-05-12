@@ -174,18 +174,21 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
      * Метод создаёт и возвращает менеджер, заполняя его данными из файла формата csv
      */
     private static FileBackedTasksManager loadFromFile(File file) {
-        // Менеджер будет создаваться с автосохранением в файл, отличный от того, из которого загружаются данные
-        // (файл будет создан в той же директории, но с префиксом new)
-        String directoryPath = Paths.get(file.getAbsolutePath()).getParent().toString();
-        String newFileName = Paths.get(directoryPath, "new" + file.getName()).toString();
-        FileBackedTasksManager taskManager = new FileBackedTasksManager(new File(newFileName));
-
+        String newFileName;
         String csv;
+
         try {
+            // Менеджер будет создаваться с автосохранением в файл, отличный от того, из которого загружаются данные
+            // (файл будет создан в той же директории, но с префиксом new)
+            String directoryPath = Paths.get(file.getAbsolutePath()).getParent().toString();
+            newFileName = Paths.get(directoryPath, "new" + file.getName()).toString();
+
             csv = Files.readString(file.toPath(), StandardCharsets.UTF_8);
         } catch (IOException exception) {
             throw new ManagerLoadException(String.format("Ошибка чтения файла %s.", file.toPath()), exception);
         }
+        FileBackedTasksManager taskManager = new FileBackedTasksManager(new File(newFileName));
+
         String[] lines = csv.split("\\n");
         if (lines.length >= DATA_FILE_MIN_LINES_COUNT) {
             for (int i = 1; i < lines.length - DATA_FILE_HISTORY_LINES_COUNT; i++) {
