@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.stream.Collectors;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
@@ -44,14 +43,21 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
         // новый менеджер для считывания создаётся как представитель класса FileBackedTasksManager, так как в дальнейшем
         // использует методы, специфичные для этого класса
-        FileBackedTasksManager newTaskManager = loadFromFile(new File(fileName));
 
-        System.out.printf(">>>>> Тестовые данные загружены в новый менеджер из файла %s%n%n", fileName);
-
-        System.out.println(">>>>> Список задач (подгружен из нового менеджера):");
-        System.out.println(newTaskManager.getCSVForAllTasks());
-        System.out.println(">>>>> История просмотров (подгружена из нового менеджера):");
-        System.out.println(toString(newTaskManager.getHistoryManager()));
+        try {
+            FileBackedTasksManager newTaskManager = loadFromFile(new File(fileName));
+            System.out.printf(">>>>> Тестовые данные загружены в новый менеджер из файла %s%n%n", fileName);
+            System.out.println(">>>>> Список задач (подгружен из нового менеджера):");
+            System.out.println(newTaskManager.getCSVForAllTasks());
+            System.out.println(">>>>> История просмотров (подгружена из нового менеджера):");
+            System.out.println(toString(newTaskManager.getHistoryManager()));
+        } catch (ManagerLoadException exception){
+            System.out.printf(">>>>> Из-за ошибок не удалось загрузить данные из файла %s%n", fileName);
+            System.out.println(exception.getMessage());
+            if (exception.getCause() != null) {
+                exception.getCause().printStackTrace();
+            }
+        }
     }
 
     /**
@@ -114,7 +120,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     /**
      * Метод создаёт и возвращает задачу (эпик, подзадачу) на основании данных, переданных в строке csv-формата
      */
-    private Task fromString(String value) {
+    private Task fromString(String value) throws ManagerLoadException {
         int id;
         TaskType type;
         TaskStatus status;
@@ -160,7 +166,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
      * Метод создаёт и возвращает список с id задач из истории просмотра на основании данных, переданных
      * в строке csv-формата
      */
-    private static List<Integer> historyFromString(String value) {
+    private static List<Integer> historyFromString(String value) throws ManagerLoadException {
         List<Integer> historyTasksId = new ArrayList<>();
         String[] history = value.split(",");
         for (String id : history) {
@@ -177,7 +183,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     /**
      * Метод создаёт и возвращает менеджер, заполняя его данными из файла формата csv
      */
-    private static FileBackedTasksManager loadFromFile(File file) {
+    private static FileBackedTasksManager loadFromFile(File file) throws ManagerLoadException {
         String newFileName;
         String csv;
 
