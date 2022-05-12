@@ -34,14 +34,20 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         // Создание первого менеджера для добавления данных
         TaskManager taskManager = Managers.getDefault();
         String fileName = Managers.DEFAULT_BACKUP_FILE_NAME;
-
         // Использование методов специально созданного класса TestScenario для добавления тестовых данных
         TestScenario test = new TestScenario(taskManager);
 
-        test.Add2Tasks2Epics3Subtasks(); // добавление двух задач, двух эпиков и трёх подзадач
-        test.View2Tasks1Epic(); // имитация просмотра двух задач и эпика
-
-        System.out.printf("%n>>>>> Тестовые данные были добавлены в менеджер и сохранены в файл %s%n%n", fileName);
+        try {
+            test.Add2Tasks2Epics3Subtasks(); // добавление двух задач, двух эпиков и трёх подзадач
+            test.View2Tasks1Epic(); // имитация просмотра двух задач и эпика
+            System.out.printf("%n>>>>> Тестовые данные были добавлены в менеджер и сохранены в файл %s%n%n", fileName);
+        } catch (ManagerSaveException exception) {
+            System.out.printf(">>>>> Из-за ошибок не удалось сохранить тестовые данные в файл %s%n", fileName);
+            System.out.println(exception.getMessage());
+            if (exception.getCause() != null) {
+                exception.getCause().printStackTrace();
+            }
+        }
 
         try {
             // новый менеджер для считывания создаётся как представитель класса FileBackedTasksManager, так как в дальнейшем
@@ -245,53 +251,53 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     // Методы, изменяющие задачи, переопределяются, чтобы при каждом изменении происходило автосохранение в файл.
 
     @Override
-    public void removeAllTasks() {
+    public void removeAllTasks() throws ManagerSaveException {
         super.removeAllTasks();
         save();
     }
 
     @Override
-    public void removeAllEpics() {
+    public void removeAllEpics() throws ManagerSaveException {
         super.removeAllEpics();
         save();
     }
 
     @Override
-    public void removeAllSubtasks() {
+    public void removeAllSubtasks() throws ManagerSaveException {
         super.removeAllSubtasks();
         save();
     }
 
     @Override
-    public int addTaskOfAnyType(Task task) {
+    public int addTaskOfAnyType(Task task) throws ManagerSaveException {
         int id = super.addTaskOfAnyType(task);
         save();
         return id;
     }
 
     @Override
-    public boolean replaceTask(Task task) {
+    public boolean replaceTask(Task task) throws ManagerSaveException {
         boolean isSuccessfullyReplacing = super.replaceTask(task);
         save();
         return isSuccessfullyReplacing;
     }
 
     @Override
-    public boolean replaceEpic(Epic epic) {
+    public boolean replaceEpic(Epic epic) throws ManagerSaveException {
         boolean isSuccessfullyReplacing = super.replaceEpic(epic);
         save();
         return isSuccessfullyReplacing;
     }
 
     @Override
-    public boolean replaceSubtask(Subtask subtask) {
+    public boolean replaceSubtask(Subtask subtask) throws ManagerSaveException {
         boolean isSuccessfullyReplacing = super.replaceSubtask(subtask);
         save();
         return isSuccessfullyReplacing;
     }
 
     @Override
-    public void removeTaskOfAnyTypeById(int id) {
+    public void removeTaskOfAnyTypeById(int id) throws ManagerSaveException {
         super.removeTaskOfAnyTypeById(id);
         save();
     }
@@ -300,21 +306,21 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     // в истории просмотров, таким образом, тоже автосохраняются в файл.
 
     @Override
-    public Task getTask(int id) {
+    public Task getTask(int id) throws ManagerSaveException {
         Task task = super.getTask(id);
         save();
         return task;
     }
 
     @Override
-    public Epic getEpic(int id) {
+    public Epic getEpic(int id) throws ManagerSaveException {
         Epic epic = super.getEpic(id);
         save();
         return epic;
     }
 
     @Override
-    public Subtask getSubtask(int id) {
+    public Subtask getSubtask(int id) throws ManagerSaveException {
         Subtask subtask = super.getSubtask(id);
         save();
         return subtask;
