@@ -31,9 +31,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     public static void main(String[] args) {
-        String fileName = "tasks.csv";
         // Создание первого менеджера для добавления данных
-        FileBackedTasksManager taskManager = new FileBackedTasksManager(new File(fileName));
+        TaskManager taskManager = Managers.getDefault();
+        String fileName = Managers.DEFAULT_BACKUP_FILE_NAME;
+
         // Использование методов специально созданного класса TestScenario для добавления тестовых данных
         TestScenario test = new TestScenario(taskManager);
         test.Add2Tasks2Epics3Subtasks(); // добавление двух задач, двух эпиков и трёх подзадач
@@ -41,7 +42,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
         System.out.printf("%n>>>>> Тестовые данные были добавлены в менеджер и сохранены в файл %s%n%n", fileName);
 
-        FileBackedTasksManager newTaskManager = loadFromFile(new File(fileName)); // новый менеджер для считывания
+        // новый менеджер для считывания создаётся как представитель класса FileBackedTasksManager, так как в дальнейшем
+        // использует методы, специфичные для этого класса
+        FileBackedTasksManager newTaskManager = loadFromFile(new File(fileName));
 
         System.out.printf(">>>>> Тестовые данные загружены в новый менеджер из файла %s%n%n", fileName);
 
@@ -49,6 +52,13 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         System.out.println(newTaskManager.getCSVForAllTasks());
         System.out.println(">>>>> История просмотров (подгружена из нового менеджера):");
         System.out.println(toString(newTaskManager.getHistoryManager()));
+    }
+
+    /**
+     * Метод возвращает файл, в который сохраняются данные менеджера
+     */
+    public File getFile() {
+        return file;
     }
 
     /**
