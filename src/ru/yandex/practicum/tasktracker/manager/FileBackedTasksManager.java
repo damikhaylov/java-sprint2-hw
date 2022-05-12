@@ -19,9 +19,10 @@ import java.util.stream.Collectors;
 public class FileBackedTasksManager extends InMemoryTaskManager {
     private static final String CSV_HEAD = "id,type,name,status,description,epic";
     private static final int TASK_FIELDS_COUNT = 6;
-    private static final int DATA_FILE_MIN_LINES_COUNT = 4; // минимальное число строк в файле csv: заголовки, строка
-    // задачи, строка-разделитель, строка истории просмотров
-    private static final int DATA_FILE_HISTORY_LINES_COUNT = 2;
+
+    // Минимальное число строк в файле csv сокращено до двух: заголовок и строка данных задачи. Ранее обязательные
+    // строки разделителя и истории (которая могла быть пустой) теперь могут отсутствовать в файле.
+    private static final int DATA_FILE_MIN_LINES_COUNT = 2;
 
     private final File file;
 
@@ -36,22 +37,22 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
         // Использование методов специально созданного класса TestScenario для добавления тестовых данных
         TestScenario test = new TestScenario(taskManager);
+
         test.Add2Tasks2Epics3Subtasks(); // добавление двух задач, двух эпиков и трёх подзадач
         test.View2Tasks1Epic(); // имитация просмотра двух задач и эпика
 
         System.out.printf("%n>>>>> Тестовые данные были добавлены в менеджер и сохранены в файл %s%n%n", fileName);
 
-        // новый менеджер для считывания создаётся как представитель класса FileBackedTasksManager, так как в дальнейшем
-        // использует методы, специфичные для этого класса
-
         try {
+            // новый менеджер для считывания создаётся как представитель класса FileBackedTasksManager, так как в дальнейшем
+            // использует методы, специфичные для этого класса
             FileBackedTasksManager newTaskManager = loadFromFile(new File(fileName));
             System.out.printf(">>>>> Тестовые данные загружены в новый менеджер из файла %s%n%n", fileName);
             System.out.println(">>>>> Список задач (подгружен из нового менеджера):");
             System.out.println(newTaskManager.getCSVForAllTasks());
             System.out.println(">>>>> История просмотров (подгружена из нового менеджера):");
             System.out.println(toString(newTaskManager.getHistoryManager()));
-        } catch (ManagerLoadException exception){
+        } catch (ManagerLoadException exception) {
             System.out.printf(">>>>> Из-за ошибок не удалось загрузить данные из файла %s%n", fileName);
             System.out.println(exception.getMessage());
             if (exception.getCause() != null) {
@@ -63,7 +64,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     /**
      * Метод сохраняет задачи и историю просмотров в файл
      */
-    public void save() {
+    public void save() throws ManagerSaveException {
         String fileName = file.getName();
         StringBuilder stringBuilder = new StringBuilder(getCSVForAllTasks());
         stringBuilder.append("\n");
@@ -200,21 +201,45 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         FileBackedTasksManager taskManager = new FileBackedTasksManager(new File(newFileName));
 
         String[] lines = csv.split("\\n");
-        if (lines.length >= DATA_FILE_MIN_LINES_COUNT) {
-            for (int i = 1; i < lines.length - DATA_FILE_HISTORY_LINES_COUNT; i++) {
-                taskManager.addTaskOfAnyType(taskManager.fromString(lines[i]));
-            }
 
-            List<Integer> historyTasksId = historyFromString(lines[lines.length - 1]);
-            for (Integer id : historyTasksId) {
-                if (taskManager.getTask(id) == null) {
-                    if (taskManager.getSubtask(id) == null) {
-                        taskManager.getEpic(id);
-                    }
-                }
+        if (lines.length < DATA_FILE_MIN_LINES_COUNT) {
+            throw new ManagerLoadException(
+                    String.format("Количество строк в файле %s меньше предусмотренного: %d < %d.",
+                            file.toPath(), lines.length, DATA_FILE_MIN_LINES_COUNT));
+        }
+
+        int lineNumber;
+        for (lineNumber = 1; lineNumber < lines.length; lineNumber++) { // перебор строк начинается со второй строки
+            if (!lines[lineNumber].isEmpty()) {
+                taskManager.addTaskOfAnyType(taskManager.fromString(lines[lineNumber]));
+            } else {
+                break;
             }
         }
+
+        int historyLineNumber = lineNumber + 1;
+
+        if (historyLineNumber < lines.length) {
+            List<Integer> historyTasksId = historyFromString(lines[historyLineNumber]);
+            for (Integer id : historyTasksId) {
+                taskManager.addTaskToHistoryByGettingById(id);
+            }
+        }
+
         return taskManager;
+    }
+
+    /**
+     * Метод добавляет задачу в историю, запрашивая её через id
+     */
+    private void addTaskToHistoryByGettingById(int id) {
+        if (this.getTask(id) != null) {
+            return;
+        }
+        if (this.getSubtask(id) != null) {
+            return;
+        }
+        this.getEpic(id);
     }
 
     // Методы, изменяющие задачи, переопределяются, чтобы при каждом изменении происходило автосохранение в файл.
