@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
-public class FileBackedTasksManager extends InMemoryTaskManager implements TaskManager {
+public class FileBackedTasksManager extends InMemoryTaskManager {
     private static final String CSV_HEAD = "id,type,name,status,description,epic";
     private static final int TASK_FIELDS_COUNT = 6;
     private static final int DATA_FILE_MIN_LINES_COUNT = 4; // минимальное число строк в файле csv: заголовки, строка
