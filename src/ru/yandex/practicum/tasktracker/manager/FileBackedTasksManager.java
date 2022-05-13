@@ -11,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.io.IOException;
 
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -50,35 +49,19 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
         // Использование методов специально созданного класса TestScenario для добавления тестовых данных
         TestScenario test = new TestScenario(taskManager);
+        test.Add2Tasks2Epics3Subtasks(); // добавление двух задач, двух эпиков и трёх подзадач
+        test.View2Tasks1Epic(); // имитация просмотра двух задач и эпика
+        System.out.printf("%n>>>>> Тестовые данные были добавлены в менеджер и сохранены в файл %s%n%n", fileName);
 
-        try {
-            test.Add2Tasks2Epics3Subtasks(); // добавление двух задач, двух эпиков и трёх подзадач
-            test.View2Tasks1Epic(); // имитация просмотра двух задач и эпика
-            System.out.printf("%n>>>>> Тестовые данные были добавлены в менеджер и сохранены в файл %s%n%n", fileName);
-        } catch (ManagerSaveException exception) {
-            System.out.printf(">>>>> Из-за ошибок не удалось сохранить тестовые данные в файл %s%n", fileName);
-            System.out.println(exception.getMessage());
-            if (exception.getCause() != null) {
-                exception.getCause().printStackTrace();
-            }
-        }
+        System.out.printf(">>>>> Загрузка тестовых данных в новый менеджер из файла %s%n%n", fileName);
 
-        try {
-            // новый менеджер для считывания создаётся как представитель класса FileBackedTasksManager, так как
-            // в дальнейшем использует методы, специфичные для этого класса
-            FileBackedTasksManager newTaskManager = new FileBackedTasksManager(new File(fileName));
-            System.out.printf(">>>>> Тестовые данные загружены в новый менеджер из файла %s%n%n", fileName);
-            System.out.println(">>>>> Список задач (подгружен из нового менеджера):");
-            System.out.println(newTaskManager.getCSVForAllTasks());
-            System.out.println(">>>>> История просмотров (подгружена из нового менеджера):");
-            System.out.println(toString(newTaskManager.historyManager));
-        } catch (ManagerLoadException exception) {
-            System.out.printf(">>>>> Из-за ошибок не удалось загрузить данные из файла %s%n", fileName);
-            System.out.println(exception.getMessage());
-            if (exception.getCause() != null) {
-                exception.getCause().printStackTrace();
-            }
-        }
+        // Создание второго менеджера и считывание в него данных, сохранённых первым менеджером
+        FileBackedTasksManager newTaskManager = new FileBackedTasksManager(new File(fileName));
+
+        System.out.println("\n>>>>> Список задач (подгружен из нового менеджера):");
+        System.out.println(newTaskManager.getCSVForAllTasks());
+        System.out.println(">>>>> История просмотров (подгружена из нового менеджера):");
+        System.out.println(toString(newTaskManager.historyManager));
     }
 
     /**
@@ -150,6 +133,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         String[] fields = value.split(",", -1);
 
         if (fields.length != TASK_FIELDS_COUNT) {
+            // Исключение будет обработано в методе loadFromFile
             throw new ManagerLoadException(String.format("Некорректное число полей данных задачи ( = %d) в строке:%n%s",
                     fields.length, value));
         }
@@ -172,6 +156,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         } else if (type == TaskType.SUBTASK) {
             Epic epic = this.epics.getOrDefault(epicId, null);
             if (epic == null) {
+                // Исключение будет обработано в методе loadFromFile
                 throw new ManagerLoadException(
                         String.format("Подзадача ссылается на несуществующий эпик в строке:%n%s", value));
             }
@@ -192,6 +177,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             try {
                 historyTasksId.add(Integer.valueOf(id));
             } catch (NumberFormatException exception) {
+                // Исключение будет обработано в методе loadFromFile
                 throw new ManagerLoadException(
                         String.format("Идентификатор задачи в истории просмотров - не целое число: %s", id), exception);
             }
@@ -202,27 +188,44 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     /**
      * Метод создаёт и возвращает менеджер, заполняя его данными из файла формата csv
      */
-    private void loadFromFile() throws ManagerLoadException {
+    private void loadFromFile() {
         String csv;
 
         try {
             csv = Files.readString(file.toPath(), StandardCharsets.UTF_8);
         } catch (IOException exception) {
-            throw new ManagerLoadException(String.format("Ошибка чтения файла %s.", file.toPath()), exception);
+            System.out.printf("Ошибка чтения файла данных %s%n", file.toPath());
+            return;
         }
 
         String[] lines = csv.split("\\n");
 
         if (lines.length < DATA_FILE_MIN_LINES_COUNT) {
-            throw new ManagerLoadException(
-                    String.format("Количество строк в файле %s меньше предусмотренного: %d < %d.",
-                            file.toPath(), lines.length, DATA_FILE_MIN_LINES_COUNT));
+            System.out.printf("Количество строк в файле %s меньше предусмотренного: %d < %d.",
+                    file.toPath(), lines.length, DATA_FILE_MIN_LINES_COUNT);
+            return;
         }
 
         int lineNumber;
         for (lineNumber = 1; lineNumber < lines.length; lineNumber++) { // перебор строк начинается со второй строки
             if (!lines[lineNumber].isEmpty()) {
-                Task task = this.fromString(lines[lineNumber]);
+                Task task;
+
+                try { // строка парсится в задачу с отловом возможных ошибок
+                    task = this.fromString(lines[lineNumber]);
+                } catch (ManagerLoadException exception) {
+                    System.out.printf("Из-за ошибок не удалось загрузить данные из файла %s%n", file.toPath());
+                    System.out.println(exception.getMessage());
+
+                    // Поскольку при ошибке считывания какой-либо задачи может быть нарушена целостность всех данных
+                    // из-за связей эпик-подзадача, а также целостность данных по истории просмотров, то частичное
+                    // считывание задач не реализуем, а просто очищаем менеджер от всех считанных данных.
+                    this.tasks.clear();
+                    this.epics.clear();
+                    this.subtasks.clear();
+
+                    return; // завершаем работу метода, менеджер останется пустым
+                }
 
                 if (task.getClass() == Epic.class) {
                     this.epics.put(task.getId(), (Epic) task);
@@ -250,7 +253,18 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         int historyLineNumber = lineNumber + 1;
 
         if (historyLineNumber < lines.length) {
-            List<Integer> historyTasksId = historyFromString(lines[historyLineNumber]);
+            List<Integer> historyTasksId;
+
+            try { // строка истории парсится в список с отловом возможных ошибок
+                historyTasksId = historyFromString(lines[historyLineNumber]);
+            } catch (ManagerLoadException exception) {
+                System.out.printf("Возникли ошибки при чтении файла %s%n", file.toPath());
+                System.out.println(exception.getMessage());
+                System.out.println("История просмотров не будет считана.");
+
+                return; // завершаем работу метода, менеджер будет заполнен задачами, но с пустой историей
+            }
+
             for (Integer id : historyTasksId) {
                 this.addTaskToHistory(id);
             }
