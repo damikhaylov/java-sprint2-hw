@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Set;
 
 public class InMemoryTaskManager implements TaskManager {
-    private int nextTaskId; // очередной (ещё не присвоенный) id задачи
-    final private Map<Integer, Task> tasks;
-    final private Map<Integer, Epic> epics;
-    final private Map<Integer, Subtask> subtasks;
+    protected int nextTaskId; // очередной (ещё не присвоенный) id задачи
+    final protected Map<Integer, Task> tasks;
+    final protected Map<Integer, Epic> epics;
+    final protected Map<Integer, Subtask> subtasks;
     final private HistoryManager historyManager;
 
     public InMemoryTaskManager() {
@@ -143,15 +143,9 @@ public class InMemoryTaskManager implements TaskManager {
             return 0;
         }
 
-        int id = task.getId();
-
-        // Проверка, не занят ли переданный id
-        if (tasks.containsKey(id) || epics.containsKey(id) || subtasks.containsKey(id)) {
-            return 0;
+        if (task.getId() >= nextTaskId) {
+            nextTaskId = task.getId() + 1;
         }
-
-        // Номер следующей задачи будет на 1 больше максимума из хранимого номера следующей задачи и переданного id
-        nextTaskId = (id > nextTaskId) ? ++id : ++nextTaskId;
 
         if (task.getClass() == Epic.class) {
             epics.put(task.getId(), (Epic) task);

@@ -141,7 +141,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
 
         try {
-            id = Integer.parseInt(fields[0]);
+            id = Integer.parseInt(fields[0]);   // соответствие с nextTaskId реализовано в методе loadFromFile
+                                                // после добавления задачи в Map
             type = TaskType.valueOf(fields[1]);
             status = TaskStatus.valueOf(fields[3]);
             epicId = (type == TaskType.SUBTASK) ? Integer.parseInt(fields[5]) : 0;
@@ -217,7 +218,27 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         int lineNumber;
         for (lineNumber = 1; lineNumber < lines.length; lineNumber++) { // перебор строк начинается со второй строки
             if (!lines[lineNumber].isEmpty()) {
-                taskManager.addTaskOfAnyType(taskManager.fromString(lines[lineNumber]));
+                Task task = taskManager.fromString(lines[lineNumber]);
+
+                if (task.getClass() == Epic.class) {
+                    taskManager.epics.put(task.getId(), (Epic) task);
+                } else if (task.getClass() == Subtask.class) {
+                    Subtask subtask = (Subtask) task;
+                    Epic epic = subtask.getEpic();
+                    taskManager.subtasks.put(subtask.getId(), subtask);
+                    epic.getSubtasksIdSet().add(subtask.getId());
+                } else {
+                    taskManager.tasks.put(task.getId(), task);
+                }
+
+                // id задач при загрузке из файла в менеджер должно сохраняться, иначе нарушится консистентность ссылок
+                // подзадач на эпики и списка истории просмотров. При этом необходимо синхронизовать нумерацию задач,
+                // считанных из файла, с задачами, которые будут добавлены через менеджер позднее. Для этого поле
+                // nextTaskId будем назначать на 1 больше максимального id среди задач, считанных из файла.
+                if (task.getId() >= taskManager.nextTaskId) {
+                    taskManager.nextTaskId = task.getId() + 1;
+                }
+
             } else {
                 break;
             }
