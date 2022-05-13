@@ -28,12 +28,26 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     FileBackedTasksManager(File file) {
         this.file = file;
+
+        // Если файл-аргумент конструктора существует, то будет выполнено считывание данных из него,
+        // если нет, то менеджер будет создан пустым, а файл будет создан и заполнен при первом сохранении данных
+        if (this.file.exists()) {
+            loadFromFile(); // Поскольку метод должен вызываться из конструктора, он уже не может иметь вид
+            // static FileBackedTasksManager loadFromFile(File file), как в техзадании
+        }
     }
 
     public static void main(String[] args) {
+        // для создания первого менеджера будем использовать Managers.getDefault(), поэтому будем работать в дальнейшем
+        // с именем файла, которое используется по-умолчанию для создания менеджера
+        String fileName = Managers.DEFAULT_BACKUP_FILE_NAME;
+
+        // для теста удаляем файл данных, чтобы первый менеджер начал работать "с нуля"
+        new File(fileName).delete();
+
         // Создание первого менеджера для добавления данных
         TaskManager taskManager = Managers.getDefault();
-        String fileName = Managers.DEFAULT_BACKUP_FILE_NAME;
+
         // Использование методов специально созданного класса TestScenario для добавления тестовых данных
         TestScenario test = new TestScenario(taskManager);
 
@@ -50,9 +64,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
 
         try {
-            // новый менеджер для считывания создаётся как представитель класса FileBackedTasksManager, так как в дальнейшем
-            // использует методы, специфичные для этого класса
-            FileBackedTasksManager newTaskManager = loadFromFile(new File(fileName));
+            // новый менеджер для считывания создаётся как представитель класса FileBackedTasksManager, так как
+            // в дальнейшем использует методы, специфичные для этого класса
+            FileBackedTasksManager newTaskManager = new FileBackedTasksManager(new File(fileName));
             System.out.printf(">>>>> Тестовые данные загружены в новый менеджер из файла %s%n%n", fileName);
             System.out.println(">>>>> Список задач (подгружен из нового менеджера):");
             System.out.println(newTaskManager.getCSVForAllTasks());
@@ -188,21 +202,14 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     /**
      * Метод создаёт и возвращает менеджер, заполняя его данными из файла формата csv
      */
-    private static FileBackedTasksManager loadFromFile(File file) throws ManagerLoadException {
-        String newFileName;
+    private void loadFromFile() throws ManagerLoadException {
         String csv;
 
         try {
-            // Менеджер будет создаваться с автосохранением в файл, отличный от того, из которого загружаются данные
-            // (файл будет создан в той же директории, но с префиксом new)
-            String directoryPath = Paths.get(file.getAbsolutePath()).getParent().toString();
-            newFileName = Paths.get(directoryPath, "new" + file.getName()).toString();
-
             csv = Files.readString(file.toPath(), StandardCharsets.UTF_8);
         } catch (IOException exception) {
             throw new ManagerLoadException(String.format("Ошибка чтения файла %s.", file.toPath()), exception);
         }
-        FileBackedTasksManager taskManager = new FileBackedTasksManager(new File(newFileName));
 
         String[] lines = csv.split("\\n");
 
@@ -215,27 +222,26 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         int lineNumber;
         for (lineNumber = 1; lineNumber < lines.length; lineNumber++) { // перебор строк начинается со второй строки
             if (!lines[lineNumber].isEmpty()) {
-                Task task = taskManager.fromString(lines[lineNumber]);
+                Task task = this.fromString(lines[lineNumber]);
 
                 if (task.getClass() == Epic.class) {
-                    taskManager.epics.put(task.getId(), (Epic) task);
+                    this.epics.put(task.getId(), (Epic) task);
                 } else if (task.getClass() == Subtask.class) {
                     Subtask subtask = (Subtask) task;
                     Epic epic = subtask.getEpic();
-                    taskManager.subtasks.put(subtask.getId(), subtask);
+                    this.subtasks.put(subtask.getId(), subtask);
                     epic.getSubtasksIdSet().add(subtask.getId());
                 } else {
-                    taskManager.tasks.put(task.getId(), task);
+                    this.tasks.put(task.getId(), task);
                 }
 
                 // id задач при загрузке из файла в менеджер должно сохраняться, иначе нарушится консистентность ссылок
                 // подзадач на эпики и списка истории просмотров. При этом необходимо синхронизовать нумерацию задач,
                 // считанных из файла, с задачами, которые будут добавлены через менеджер позднее. Для этого поле
                 // nextTaskId будем назначать на 1 больше максимального id среди задач, считанных из файла.
-                if (task.getId() >= taskManager.nextTaskId) {
-                    taskManager.nextTaskId = task.getId() + 1;
+                if (task.getId() >= this.nextTaskId) {
+                    this.nextTaskId = task.getId() + 1;
                 }
-
             } else {
                 break;
             }
@@ -246,11 +252,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         if (historyLineNumber < lines.length) {
             List<Integer> historyTasksId = historyFromString(lines[historyLineNumber]);
             for (Integer id : historyTasksId) {
-                taskManager.addTaskToHistory(id);
+                this.addTaskToHistory(id);
             }
         }
-
-        return taskManager;
     }
 
     /**
