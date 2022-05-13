@@ -13,7 +13,7 @@ public class InMemoryTaskManager implements TaskManager {
     final protected Map<Integer, Task> tasks;
     final protected Map<Integer, Epic> epics;
     final protected Map<Integer, Subtask> subtasks;
-    final private HistoryManager historyManager;
+    final protected HistoryManager historyManager;
 
     public InMemoryTaskManager() {
         nextTaskId = 1; // нумерация задач будет начинаться с 1
@@ -251,10 +251,6 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<Task> getHistory() {
         return historyManager.getHistory();
-    }
-
-    protected HistoryManager getHistoryManager() {
-        return historyManager;
     }
 
     /**

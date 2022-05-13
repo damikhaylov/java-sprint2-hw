@@ -57,7 +57,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             System.out.println(">>>>> Список задач (подгружен из нового менеджера):");
             System.out.println(newTaskManager.getCSVForAllTasks());
             System.out.println(">>>>> История просмотров (подгружена из нового менеджера):");
-            System.out.println(toString(newTaskManager.getHistoryManager()));
+            System.out.println(toString(newTaskManager.historyManager));
         } catch (ManagerLoadException exception) {
             System.out.printf(">>>>> Из-за ошибок не удалось загрузить данные из файла %s%n", fileName);
             System.out.println(exception.getMessage());
@@ -74,7 +74,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         String fileName = file.getName();
         StringBuilder stringBuilder = new StringBuilder(getCSVForAllTasks());
         stringBuilder.append("\n");
-        stringBuilder.append(toString(this.getHistoryManager()));
+        stringBuilder.append(toString(this.historyManager));
         try (Writer fileWriter = new FileWriter(fileName, StandardCharsets.UTF_8)) {
             fileWriter.write(stringBuilder.toString());
         } catch (IOException exception) {
@@ -142,7 +142,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
         try {
             id = Integer.parseInt(fields[0]);   // соответствие с nextTaskId реализовано в методе loadFromFile
-                                                // после добавления задачи в Map
+            // после добавления задачи в Map
             type = TaskType.valueOf(fields[1]);
             status = TaskStatus.valueOf(fields[3]);
             epicId = (type == TaskType.SUBTASK) ? Integer.parseInt(fields[5]) : 0;
@@ -156,13 +156,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         if (type == TaskType.EPIC) {
             return new Epic(id, name, status, description);
         } else if (type == TaskType.SUBTASK) {
-            Epic epic = this.getEpic(epicId);
+            Epic epic = this.epics.getOrDefault(epicId, null);
             if (epic == null) {
                 throw new ManagerLoadException(
                         String.format("Подзадача ссылается на несуществующий эпик в строке:%n%s", value));
-            } else {
-                // удаление запрошенного для формирования подзадачи эпика из истории просмотров
-                this.getHistoryManager().remove(epicId);
             }
             return new Subtask(id, name, status, description, epic);
         } else {
@@ -249,7 +246,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         if (historyLineNumber < lines.length) {
             List<Integer> historyTasksId = historyFromString(lines[historyLineNumber]);
             for (Integer id : historyTasksId) {
-                taskManager.addTaskToHistoryByGettingById(id);
+                taskManager.addTaskToHistory(id);
             }
         }
 
@@ -257,16 +254,16 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     /**
-     * Метод добавляет задачу в историю, запрашивая её через id
+     * Метод добавляет задачу в историю
      */
-    private void addTaskToHistoryByGettingById(int id) {
-        if (this.getTask(id) != null) {
-            return;
+    private void addTaskToHistory(int id) {
+        if (this.epics.containsKey(id)) {
+            this.historyManager.add(this.epics.get(id));
+        } else if (this.subtasks.containsKey(id)) {
+            this.historyManager.add(this.subtasks.get(id));
+        } else if (this.tasks.containsKey(id)) {
+            this.historyManager.add(this.tasks.get(id));
         }
-        if (this.getSubtask(id) != null) {
-            return;
-        }
-        this.getEpic(id);
     }
 
     // Методы, изменяющие задачи, переопределяются, чтобы при каждом изменении происходило автосохранение в файл.
