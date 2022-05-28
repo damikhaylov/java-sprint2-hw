@@ -3,16 +3,24 @@ package ru.yandex.practicum.tasktracker.model;
 import java.util.Objects;
 
 public class Task {
-    final private int id;
-    final private TaskStatus status;
-    final private String name;
-    final private String description;
+    // TODO: Комментарий для ревью (спринт 6) - В класс добавлены конструкторы для создания задач без id
+    //  (как в примере тестов техзадания)
+
+    public static final int DEFAULT_ID = 0;
+    private final int id;
+    private final TaskStatus status;
+    private final String name;
+    private final String description;
 
     public Task(int id, String name, TaskStatus status, String description) {
         this.id = id;
         this.name = name;
         this.status = status;
         this.description = description;
+    }
+
+    public Task(String name, TaskStatus status, String description) {
+        this(DEFAULT_ID, name, status, description);
     }
 
     public Task(int id, String name, String description) {

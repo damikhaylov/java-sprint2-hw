@@ -3,6 +3,9 @@ package ru.yandex.practicum.tasktracker.model;
 import java.util.*;
 
 public class Epic extends Task {
+    // TODO: Комментарий для ревью (спринт 6) - В класс добавлены конструкторы для создания задач без id
+    //  (как в примере тестов техзадания)
+
     private TaskStatus status;
     final private Set<Integer> subtasksIdSet; // множество, содержащее идентификаторы подзадач
 
@@ -14,6 +17,14 @@ public class Epic extends Task {
 
     public Epic(int id, String name, String description) {
         this(id, name, TaskStatus.NEW, description);
+    }
+
+    public Epic(String name, TaskStatus status, String description) {
+        this(DEFAULT_ID, name, status, description);
+    }
+
+    public Epic(String name, String description) {
+        this(name, TaskStatus.NEW, description);
     }
 
     @Override

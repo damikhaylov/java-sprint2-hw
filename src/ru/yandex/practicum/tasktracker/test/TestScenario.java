@@ -1,6 +1,7 @@
 package ru.yandex.practicum.tasktracker.test;
 
 import ru.yandex.practicum.tasktracker.manager.FileBackedTasksManager;
+import ru.yandex.practicum.tasktracker.manager.InMemoryTaskManager;
 import ru.yandex.practicum.tasktracker.manager.TaskManager;
 import ru.yandex.practicum.tasktracker.model.Epic;
 import ru.yandex.practicum.tasktracker.model.Subtask;
@@ -30,34 +31,36 @@ public class TestScenario {
         Subtask subtask; // Объект для формирования подзадачи и передачи в методы TaskManager
 
         // Создание двух задач
-        task = new Task(taskManager.getNextTaskId(), "Покормить кота", TaskStatus.NEW,
+        task = new Task("Покормить кота", TaskStatus.NEW,
                 "Дать коту в обед четверть банки корма «Berkley»");
         idFeedTheCatTask = taskManager.addTaskOfAnyType(task);
-        task = new Task(taskManager.getNextTaskId(), "Попить чаю с булками", TaskStatus.DONE,
+        task = new Task("Попить чаю с булками", TaskStatus.DONE,
                 "Съесть ещё этих мягких французских булок да выпить чаю");
         idEatBunsDrinkTeaTask = taskManager.addTaskOfAnyType(task);
 
         // Создание эпика с тремя подзадачами
-        epic = new Epic(taskManager.getNextTaskId(), "Запроектировать трёхэтажный каркас",
+        epic = new Epic("Запроектировать трёхэтажный каркас",
                 "Выполнить проект каркаса трёхэтажного административного здания");
-        idDesignStructureEpic = taskManager.addTaskOfAnyType(epic);
-        subtask = new Subtask(taskManager.getNextTaskId(), "Рассчитать плоскую раму", TaskStatus.DONE,
+        epic = (Epic) taskManager.addTaskOfAnyTypeReturningTask(epic);
+        idDesignStructureEpic = epic.getId();
+
+        subtask = new Subtask("Рассчитать плоскую раму", TaskStatus.DONE,
                 "Выполнить статический расчёт плоской рамы и подобрать сечения элементов",
                 epic);
         idDesignFrameSubtask = taskManager.addTaskOfAnyType(subtask);
-        subtask = new Subtask(taskManager.getNextTaskId(), "Выполнить пространственный расчёт",
+        subtask = new Subtask("Выполнить пространственный расчёт",
                 TaskStatus.DONE,
                 "Выполнить пространственный расчёт с учётом действия пульсационных ветровых нагрузок",
                 epic);
         idDesign3DSubtask = taskManager.addTaskOfAnyType(subtask);
-        subtask = new Subtask(taskManager.getNextTaskId(), "Сделать чертёж",
+        subtask = new Subtask("Сделать чертёж",
                 TaskStatus.DONE,
                 "Сделать чертёж со схемой каркаса",
                 epic);
         idMakeDrawing = taskManager.addTaskOfAnyType(subtask);
 
         // Создание эпика без подзадач
-        epic = new Epic(taskManager.getNextTaskId(), "Выполнить ТО автомобиля",
+        epic = new Epic("Выполнить ТО автомобиля",
                 "Выполнить техобслуживание автомобиля");
         idCarMaintenanceEpic = taskManager.addTaskOfAnyType(epic);
     }

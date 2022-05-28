@@ -31,6 +31,8 @@ public interface TaskManager {
 
     int addTaskOfAnyType(Task task);
 
+    Task addTaskOfAnyTypeReturningTask(Task task);
+
     boolean replaceTask(Task task);
 
     boolean replaceEpic(Epic epic);
