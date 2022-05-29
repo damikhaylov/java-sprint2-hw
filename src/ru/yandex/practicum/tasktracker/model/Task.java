@@ -3,7 +3,7 @@ package ru.yandex.practicum.tasktracker.model;
 import java.util.Objects;
 
 public class Task {
-    // TODO: Комментарий для ревью (спринт 6) - В класс добавлены конструкторы для создания задач без id
+    // TODO: Комментарий для ревью (удалить после спринта 6) - В класс добавлены конструкторы для создания задач без id
     //  (как в примере тестов техзадания)
 
     public static final int DEFAULT_ID = 0;

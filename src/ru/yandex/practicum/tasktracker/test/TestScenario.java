@@ -1,7 +1,6 @@
 package ru.yandex.practicum.tasktracker.test;
 
-import ru.yandex.practicum.tasktracker.manager.FileBackedTasksManager;
-import ru.yandex.practicum.tasktracker.manager.InMemoryTaskManager;
+import ru.yandex.practicum.tasktracker.manager.FileBackedTaskManager;
 import ru.yandex.practicum.tasktracker.manager.TaskManager;
 import ru.yandex.practicum.tasktracker.model.Epic;
 import ru.yandex.practicum.tasktracker.model.Subtask;
@@ -41,7 +40,7 @@ public class TestScenario {
         // Создание эпика с тремя подзадачами
         epic = new Epic("Запроектировать трёхэтажный каркас",
                 "Выполнить проект каркаса трёхэтажного административного здания");
-        epic = (Epic) taskManager.addTaskOfAnyTypeReturningTask(epic);
+        epic = (Epic) taskManager.addTaskOfAnyTypeAndReturnTask(epic);
         idDesignStructureEpic = epic.getId();
 
         subtask = new Subtask("Рассчитать плоскую раму", TaskStatus.DONE,
@@ -124,7 +123,7 @@ public class TestScenario {
 
     public void printHistory() {
         for (Task anyTypeTask : taskManager.getHistory()) {
-            System.out.println(FileBackedTasksManager.toString(anyTypeTask));
+            System.out.println(FileBackedTaskManager.toString(anyTypeTask));
         }
     }
 }

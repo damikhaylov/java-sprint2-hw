@@ -1,10 +1,8 @@
 id,type,name,status,description,epic
-43,TASK,Покормить кота,NEW,Дать коту в обед четверть банки корма «Berkley»,
-44,TASK,Попить чаю с булками,DONE,Съесть ещё этих мягких французских булок да выпить чаю,
-49,EPIC,Выполнить ТО автомобиля,NEW,Выполнить техобслуживание автомобиля,
-45,EPIC,Запроектировать трёхэтажный каркас,NEW,Выполнить проект каркаса трёхэтажного административного здания,
-48,SUBTASK,Сделать чертёж,DONE,Сделать чертёж со схемой каркаса,0
-46,SUBTASK,Рассчитать плоскую раму,DONE,Выполнить статический расчёт плоской рамы и подобрать сечения элементов,0
-47,SUBTASK,Выполнить пространственный расчёт,DONE,Выполнить пространственный расчёт с учётом действия пульсационных ветровых нагрузок,0
+1,TASK,Task A,NEW,Task A description,
+2,TASK,Task B,IN_PROGRESS,Task B description,
+3,EPIC,Epic A,IN_PROGRESS,Epic A description,
+4,SUBTASK,Subtask A,NEW,Subtask A description,3
+5,SUBTASK,Subtask B,IN_PROGRESS,Subtask B description,3
+6,SUBTASK,Subtask C,DONE,Subtask C description,3
 
-43,44,49

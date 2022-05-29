@@ -6,7 +6,7 @@ public class Managers {
     public static final String DEFAULT_BACKUP_FILE_NAME = "tasks.csv";
 
     public static TaskManager getDefault() {
-        return new FileBackedTasksManager(new File(DEFAULT_BACKUP_FILE_NAME));
+        return new FileBackedTaskManager(new File(DEFAULT_BACKUP_FILE_NAME), false);
     }
 
     public static HistoryManager getDefaultHistory() {
