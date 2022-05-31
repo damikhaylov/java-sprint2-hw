@@ -8,6 +8,7 @@ import ru.yandex.practicum.tasktracker.manager.HistoryManager;
 import ru.yandex.practicum.tasktracker.manager.InMemoryHistoryManager;
 import ru.yandex.practicum.tasktracker.model.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -24,9 +25,11 @@ public class HistoryManagerTest {
     @BeforeEach
     void init() {
         historyManager = new InMemoryHistoryManager();
-        taskA = new Task(1, "Task A", TaskStatus.NEW, "Task A description");
+        taskA = new Task(1, "Task A", TaskStatus.NEW, "Task A description",
+                LocalDateTime.now(), 15);
         epicA = new Epic(2, "Epic A", "Epic A description");
-        subtaskA = new Subtask(3, "Subtask A", TaskStatus.NEW, "Subtask A description", epicA);
+        subtaskA = new Subtask(3, "Subtask A", TaskStatus.NEW, "Subtask A description",
+                LocalDateTime.now(), 15, epicA);
         historyManager.add(taskA);
         historyManager.add(epicA);
         historyManager.add(subtaskA);

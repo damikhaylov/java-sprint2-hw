@@ -1,0 +1,87 @@
+package ru.yandex.practicum.tasktracker.manager;
+
+import ru.yandex.practicum.tasktracker.model.Epic;
+import ru.yandex.practicum.tasktracker.model.Subtask;
+import ru.yandex.practicum.tasktracker.model.TaskStatus;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+
+// TODO: Комментарий для ревью (удалить после спринта 6) - логика для вычисления свойств эпика, которая после замечаний
+//  ревью была перенесена в TaskManager, сейчас вынесена во вспомогательный класс со статическими методами
+
+public class EpicPropertiesHelper {
+
+    protected static void calculateAndSet(Epic epic, Map<Integer, Subtask> subtasks) {
+        setEpicStatusBySubtasks(epic, subtasks);
+        setEpicTimesBySubtasks(epic, subtasks);
+    }
+
+    /**
+     * Назначает статус эпика на основе статусов его подзадач
+     */
+    private static void setEpicStatusBySubtasks(Epic epic, Map<Integer, Subtask> subtasks) {
+        if (epic.getSubtasksIdSet().size() == 0) {
+            epic.setStatus(TaskStatus.NEW);
+            return;
+        }
+        TaskStatus newStatus = null;
+        for (int id : epic.getSubtasksIdSet()) {
+            TaskStatus subtaskStatus = subtasks.get(id).getStatus();
+            if (newStatus == null) { // Блок для присвоения переменной статуса первой подзадачи
+                newStatus = subtaskStatus;
+            }
+            if (subtaskStatus == TaskStatus.IN_PROGRESS) {  // Если какая-либо подзадача IN_PROGRESS,
+                newStatus = TaskStatus.IN_PROGRESS;         // то эпик автоматически IN_PROGRESS
+                break;
+            } else if (subtaskStatus != newStatus) {        // Если подзадачи имеют разные статусы,
+                newStatus = TaskStatus.IN_PROGRESS;          // то эпик автоматически IN_PROGRESS
+                break;
+            }
+        }
+        epic.setStatus(newStatus); // Если статус всех подзадач был одинаков, присваиваем его эпику
+    }
+
+    /**
+     * Назначает время начала, окончания и продолжительность эпика на основе значений для подзадач
+     */
+    private static void setEpicTimesBySubtasks(Epic epic, Map<Integer, Subtask> subtasks) {
+        if (epic.getSubtasksIdSet().size() == 0) {
+            epic.setStartTime(null);
+            epic.setDuration(0);
+            epic.setEndTime(null);
+            return;
+        }
+
+        LocalDateTime startTime = null;
+        LocalDateTime endTime = null;
+        int duration = 0;
+        for (int id : epic.getSubtasksIdSet()) {
+            LocalDateTime subtaskStartTime = subtasks.get(id).getStartTime();
+            LocalDateTime subtaskEndTime = subtasks.get(id).getEndTime();
+            int subtaskDuration = subtasks.get(id).getDuration();
+
+            duration += subtaskDuration;
+
+            if (subtaskStartTime == null) {
+                continue;
+            }
+
+            if (startTime == null) {
+                startTime = subtaskStartTime;
+                endTime = subtaskEndTime;
+                continue;
+            }
+
+            if (subtaskStartTime.isBefore(startTime)) {
+                startTime = subtaskStartTime;
+            }
+            if (subtaskEndTime.isAfter(endTime)) {
+                endTime = subtaskEndTime;
+            }
+        }
+        epic.setStartTime(startTime);
+        epic.setDuration(duration);
+        epic.setEndTime(endTime);
+    }
+}

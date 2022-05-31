@@ -1,26 +1,31 @@
 package ru.yandex.practicum.tasktracker.model;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class Epic extends Task {
-    // TODO: Комментарий для ревью (удалить после спринта 6) - В класс добавлены конструкторы для создания задач без id
-    //  (как в примере тестов техзадания)
 
     private TaskStatus status;
+    private LocalDateTime startTime;
+    private int duration;
+    private LocalDateTime endTime;
     final private Set<Integer> subtasksIdSet; // множество, содержащее идентификаторы подзадач
 
-    public Epic(int id, String name, TaskStatus status, String description) {
+    public Epic(int id, String name, TaskStatus status, String description, LocalDateTime startTime, int duration) {
         super(id, name, description);
         this.status = status;
+        this.startTime = startTime;
+        this.duration = duration;
         subtasksIdSet = new HashSet<>();
     }
 
     public Epic(int id, String name, String description) {
-        this(id, name, TaskStatus.NEW, description);
+        this(id, name, TaskStatus.NEW, description,
+                null, 0);
     }
 
     public Epic(String name, TaskStatus status, String description) {
-        this(DEFAULT_ID, name, status, description);
+        this(DEFAULT_ID, name, status, description, null, 0);
     }
 
     public Epic(String name, String description) {
@@ -34,6 +39,33 @@ public class Epic extends Task {
 
     public void setStatus(TaskStatus status) {
         this.status = status;
+    }
+
+    @Override
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    @Override
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    @Override
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     /**
@@ -57,6 +89,12 @@ public class Epic extends Task {
         } else {
             result.append("description=null, ");
         }
+        if (getStartTime() != null) {
+            result.append("startTime=").append(getStartTime().toString()).append(", ");
+        } else {
+            result.append("startTime=null").append(", ");
+        }
+        result.append("duration=").append(getDuration()).append(", ");
         result.append("subtasks=").append(getSubtasksIdSet());
         result.append('}');
         return result.toString();

@@ -2,7 +2,6 @@ package ru.yandex.practicum.tasktracker.manager;
 
 import ru.yandex.practicum.tasktracker.exeption.*;
 import ru.yandex.practicum.tasktracker.model.*;
-import ru.yandex.practicum.tasktracker.test.TestScenario;
 
 import java.io.File;
 import java.io.Writer;
@@ -11,15 +10,18 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.io.IOException;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
-    private static final String CSV_HEAD = "id,type,name,status,description,epic";
-    private static final int TASK_FIELDS_COUNT = 6;
+    private static final String CSV_HEAD = "id,type,name,status,description,start,duration,epic";
+    private static final int TASK_FIELDS_COUNT = 8;
 
     private static final int DATA_FILE_MIN_LINES_COUNT = 2;
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     private final File file;
 
@@ -31,31 +33,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         if (isFileForReadData && this.file.exists()) {
             loadFromFile();
         }
-    }
-
-    public static void main(String[] args) {
-        // для создания первого менеджера будем использовать Managers.getDefault(), поэтому будем работать в дальнейшем
-        // с именем файла, которое используется по-умолчанию для создания менеджера
-        String fileName = Managers.DEFAULT_BACKUP_FILE_NAME;
-
-        // Создание первого менеджера для добавления данных
-        TaskManager taskManager = Managers.getDefault();
-
-        // Использование методов специально созданного класса TestScenario для добавления тестовых данных
-        TestScenario test = new TestScenario(taskManager);
-        test.Add2Tasks2Epics3Subtasks(); // добавление двух задач, двух эпиков и трёх подзадач
-        test.View2Tasks1Epic(); // имитация просмотра двух задач и эпика
-        System.out.printf("%n>>>>> Тестовые данные были добавлены в менеджер и сохранены в файл %s%n%n", fileName);
-
-        System.out.printf(">>>>> Загрузка тестовых данных в новый менеджер из файла %s%n%n", fileName);
-
-        // Создание второго менеджера и считывание в него данных, сохранённых первым менеджером
-        FileBackedTaskManager newTaskManager = new FileBackedTaskManager(new File(fileName), true);
-
-        System.out.println("\n>>>>> Список задач (подгружен из нового менеджера):");
-        System.out.println(newTaskManager.getCSVForAllTasks());
-        System.out.println(">>>>> История просмотров (подгружена из нового менеджера):");
-        System.out.println(toString(newTaskManager.historyManager));
     }
 
     /**
@@ -98,6 +75,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 task.getName(),
                 String.valueOf(task.getStatus()),
                 task.getDescription(),
+                ((task.getStartTime() != null) ? task.getStartTime().format(FORMATTER) : "null"),
+                String.valueOf(task.getDuration()),
                 ((task instanceof Subtask) ? String.valueOf(((Subtask) task).getEpic().getId()) : "")
         );
     }
@@ -117,20 +96,24 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         int id;
         TaskType type;
         TaskStatus status;
+        LocalDateTime startTime;
+        int duration;
         int epicId;
 
         String[] fields = value.split(",", -1);
 
         if (fields.length != TASK_FIELDS_COUNT) {
-                throw new ManagerLoadException(String.format("Некорректное число полей данных задачи ( = %d) в строке:%n%s",
-                    fields.length, value));
+            throw new ManagerLoadException(String.format(
+                    "Некорректное число полей данных задачи ( = %d) в строке:%n%s", fields.length, value));
         }
 
         try {
             id = Integer.parseInt(fields[0]);
             type = TaskType.valueOf(fields[1]);
             status = TaskStatus.valueOf(fields[3]);
-            epicId = (type == TaskType.SUBTASK) ? Integer.parseInt(fields[5]) : 0;
+            startTime = (!fields[5].equals("null")) ? LocalDateTime.parse(fields[5], FORMATTER) : null;
+            duration = Integer.parseInt(fields[6]);
+            epicId = (type == TaskType.SUBTASK) ? Integer.parseInt(fields[7]) : 0;
         } catch (IllegalArgumentException exception) {
             throw new ManagerLoadException(String.format("Ошибка в формате данных в строке:%n%s", value), exception);
         }
@@ -139,7 +122,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         String description = fields[4];
 
         if (type == TaskType.EPIC) {
-            return new Epic(id, name, status, description);
+            return new Epic(id, name, status, description, startTime, duration);
         } else if (type == TaskType.SUBTASK) {
             Epic epic = this.epics.getOrDefault(epicId, null);
             if (epic == null) {
@@ -147,9 +130,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 throw new ManagerLoadException(
                         String.format("Подзадача ссылается на несуществующий эпик в строке:%n%s", value));
             }
-            return new Subtask(id, name, status, description, epic);
+            return new Subtask(id, name, status, description, startTime, duration, epic);
         } else {
-            return new Task(id, name, status, description);
+            return new Task(id, name, status, description, startTime, duration);
         }
     }
 

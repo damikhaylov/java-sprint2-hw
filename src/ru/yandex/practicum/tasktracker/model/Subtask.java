@@ -1,20 +1,21 @@
 package ru.yandex.practicum.tasktracker.model;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Subtask extends Task {
-    // TODO: Комментарий для ревью (удалить после спринта 6) - В класс добавлены конструкторы для создания задач без id
-    //  (как в примере тестов техзадания)
 
     final private Epic epic;
 
-    public Subtask(int id, String name, TaskStatus status, String description, Epic epic) {
-        super(id, name, status, description);
+    public Subtask(int id, String name, TaskStatus status, String description,
+                   LocalDateTime startTime, int duration, Epic epic) {
+        super(id, name, status, description, startTime, duration);
         this.epic = epic;
     }
 
-    public Subtask(String name, TaskStatus status, String description, Epic epic) {
-        super(name, status, description);
+    public Subtask(String name, TaskStatus status, String description,
+                   LocalDateTime startTime, int duration, Epic epic) {
+        super(name, status, description, startTime, duration);
         this.epic = epic;
     }
 
@@ -33,6 +34,12 @@ public class Subtask extends Task {
         } else {
             result.append("description=null, ");
         }
+        if (getStartTime() != null) {
+            result.append("startTime=").append(getStartTime().toString()).append(", ");
+        } else {
+            result.append("startTime=null").append(", ");
+        }
+        result.append("duration=").append(getDuration()).append(", ");
         result.append("epic.id=").append(epic.getId());
         result.append('}');
         return result.toString();

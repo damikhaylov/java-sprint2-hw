@@ -1,29 +1,20 @@
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.tasktracker.exeption.ManagerSaveException;
 import ru.yandex.practicum.tasktracker.manager.FileBackedTaskManager;
-import ru.yandex.practicum.tasktracker.model.Epic;
+import ru.yandex.practicum.tasktracker.manager.TasksHelper;
 import ru.yandex.practicum.tasktracker.model.Subtask;
-import ru.yandex.practicum.tasktracker.model.Task;
 import ru.yandex.practicum.tasktracker.model.TaskStatus;
 
 import java.io.File;
-import java.util.List;
+import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     private final String FILENAME = "tasks.csv";
-    private int taskAId;
-    private int taskBId;
-    private int epicAId;
-    private int epicBId;
-    private int subtaskAId;
-    private int subtaskBId;
-    private int subtaskCId;
     private FileBackedTaskManager newTaskManager;
-
 
     @BeforeEach
     @Override
@@ -37,10 +28,10 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
     void writeAndReadBakDataFileStandardTest() {
         Add2TasksAndEpicWith3Subtasks();
         // Просмотр задач для формирования истории
-        taskManager.getTask(taskAId);
-        taskManager.getTask(taskBId);
-        taskManager.getEpic(epicAId);
-        taskManager.getSubtask(subtaskAId);
+        taskManager.getTask(taskA.getId());
+        taskManager.getTask(taskB.getId());
+        taskManager.getEpic(epicA.getId());
+        taskManager.getSubtask(subtaskB.getId());
 
         newTaskManager = new FileBackedTaskManager(new File(FILENAME), true);
 
@@ -59,6 +50,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
     @Test
     @DisplayName("Тест на запись-считывание эпика без подзадач")
     void writeAndReadBakDataFileAloneEpicTest() {
+        epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
         taskManager.addTaskOfAnyType(epicA);
         newTaskManager = new FileBackedTaskManager(new File(FILENAME), true);
         compareManagersLists();
@@ -71,58 +63,102 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
     void writeAndReadEmptyBakDataFileTest() {
         taskManager.addTaskOfAnyType(taskA);
         taskManager.removeAllTasks();
+        taskManager.removeAllEpics();
         newTaskManager = new FileBackedTaskManager(new File(FILENAME), true);
         compareManagersLists();
-        assertTrue(newTaskManager.getTasks().isEmpty(), "Список задач не пустой.");
-        assertTrue(newTaskManager.getEpics().isEmpty(), "Список эпиков не пустой.");
-        assertTrue(newTaskManager.getSubtasks().isEmpty(), "Список подзадач не пустой.");
+        noDataRecordedToManagerCheck();
+    }
+
+    @Test
+    @DisplayName("Тест на чтение из недоступного файла")
+    void readFromBadFileTest() {
+        newTaskManager = new FileBackedTaskManager(new File("*?/"), true);
+        noDataRecordedToManagerCheck();
+    }
+
+    @Test
+    @DisplayName("Тест на запись в недоступный файл")
+    void writeToBadFileTest() {
+        taskManager = new FileBackedTaskManager(new File("*?/"), false);
+        taskA = TasksHelper.replaceTaskId(taskA, taskManager.getNextTaskId());
+        final ManagerSaveException exception = assertThrows(
+                ManagerSaveException.class,
+                () -> taskManager.addTaskOfAnyType(taskA)
+        );
+        assertTrue(exception.getMessage().contains("Ошибка записи в файл"));
+    }
+
+    @Test
+    @DisplayName("Тест на чтение из файла одной строкой заголовка или вообще без строк")
+    void readFromOnlyHeaderOrEmptyFileTest() {
+        newTaskManager = new FileBackedTaskManager(new File("only_header.csv"), true);
+        noDataRecordedToManagerCheck();
+    }
+
+    @Test
+    @DisplayName("Тест на чтение из файла c неверным количеством csv полей")
+    void readFromWrongFieldsCountFileTest() {
+        newTaskManager = new FileBackedTaskManager(new File("wrong_fields_count.csv"), true);
+        noDataRecordedToManagerCheck();
+    }
+
+    @Test
+    @DisplayName("Тест на чтение из файла c неверным форматом данных в полях")
+    void readFromWrongDataFormatFileTest() {
+        newTaskManager = new FileBackedTaskManager(new File("wrong_data_format.csv"), true);
+        noDataRecordedToManagerCheck();
+    }
+
+    @Test
+    @DisplayName("Тест на чтение из файла c неверной ссылкой на эпик в записи подзадачи")
+    void readFromWrongEpicIdInSubtaskRecordFileTest() {
+        newTaskManager = new FileBackedTaskManager(new File("wrong_epic_id.csv"), true);
+        noDataRecordedToManagerCheck();
+    }
+
+    @Test
+    @DisplayName("Тест на чтение из файла c неверной ссылкой на эпик в записи подзадачи")
+    void readFromWrongHistoryFileTest() {
+        newTaskManager = new FileBackedTaskManager(new File("wrong_history.csv"), true);
         assertTrue(newTaskManager.getHistory().isEmpty(), "Список истории не пустой.");
     }
 
     public void Add2TasksAndEpicWith3Subtasks() {
-        Task task; // Объект для формирования задачи и передачи в методы TaskManager
-        Epic epic; // Объект для формирования эпика и передачи в методы TaskManager
-        Subtask subtask; // Объект для формирования подзадачи и передачи в методы TaskManager
-
         // Создание двух задач
-        taskAId = taskManager.addTaskOfAnyType(taskA);
-        task = new Task("TaskB", TaskStatus.NEW, "Task B description");
-        taskBId = taskManager.addTaskOfAnyType(taskB);
+        taskA = TasksHelper.replaceTaskId(taskA, taskManager.getNextTaskId());
+        taskManager.addTaskOfAnyType(taskA);
+        taskB = TasksHelper.replaceTaskId(taskB, taskManager.getNextTaskId());
+        taskManager.addTaskOfAnyType(taskB);
 
         // Создание эпика с тремя подзадачами
-        epic = (Epic) taskManager.addTaskOfAnyTypeAndReturnTask(epicA);
-        epicAId = epic.getId();
+        epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
+        taskManager.addTaskOfAnyType(epicA);
 
-        subtask = new Subtask("Subtask A", TaskStatus.NEW, "Subtask A description", epic);
-        subtaskAId = taskManager.addTaskOfAnyType(subtask);
-        subtask = new Subtask("Subtask B", TaskStatus.IN_PROGRESS, "Subtask B description", epic);
-        subtaskBId = taskManager.addTaskOfAnyType(subtask);
-        subtask = new Subtask("Subtask C", TaskStatus.DONE, "Subtask C description", epic);
-        subtaskCId = taskManager.addTaskOfAnyType(subtask);
+        subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask A", TaskStatus.NEW,
+                "Subtask A description",
+                LocalDateTime.of(2022, 6, 3, 10, 0), 15, epicA);
+        taskManager.addTaskOfAnyType(subtaskA);
+        subtaskB = new Subtask(taskManager.getNextTaskId(), "Subtask B", TaskStatus.IN_PROGRESS,
+                "Subtask B description",
+                null, 15, epicA);
+        taskManager.addTaskOfAnyType(subtaskB);
+        subtaskC = new Subtask(taskManager.getNextTaskId(), "Subtask C", TaskStatus.DONE,
+                "Subtask C description",
+                LocalDateTime.of(2022, 6, 3, 15, 0), 15, epicA);
+        taskManager.addTaskOfAnyType(subtaskC);
     }
 
     private void compareManagersLists() {
-        (new taskListsComparation<Task>(taskManager.getTasks(), newTaskManager.getTasks())).compare();
-        (new taskListsComparation<Epic>(taskManager.getEpics(), newTaskManager.getEpics())).compare();
-        (new taskListsComparation<Subtask>(taskManager.getSubtasks(), newTaskManager.getSubtasks())).compare();
-        (new taskListsComparation<Task>(taskManager.getHistory(), newTaskManager.getHistory())).compare();
-    }
-}
-
-
-class taskListsComparation<T extends Task> {
-    private final List<T> list1;
-    private final List<T> list2;
-
-    taskListsComparation(List<T> list1, List<T> list2) {
-        this.list1 = list1;
-        this.list2 = list2;
+        compareTasksLists(taskManager.getTasks(), newTaskManager.getTasks());
+        compareTasksLists(taskManager.getEpics(), newTaskManager.getEpics());
+        compareTasksLists(taskManager.getSubtasks(), newTaskManager.getSubtasks());
+        compareTasksLists(taskManager.getHistory(), newTaskManager.getHistory());
     }
 
-    public void compare() {
-        assertEquals(list1.size(), list2.size(), "Размеры списка задач не совпадают.");
-        for (int i = 0; i < list1.size(); i++) {
-            assertEquals(list2.get(i), list1.get(i), "Элементы списка задач не совпадают.");
-        }
+    private void noDataRecordedToManagerCheck() {
+        assertTrue(newTaskManager.getTasks().isEmpty(), "Список задач не пустой.");
+        assertTrue(newTaskManager.getEpics().isEmpty(), "Список эпиков не пустой.");
+        assertTrue(newTaskManager.getSubtasks().isEmpty(), "Список подзадач не пустой.");
+        assertTrue(newTaskManager.getHistory().isEmpty(), "Список истории не пустой.");
     }
 }
