@@ -9,14 +9,14 @@ public class Epic extends Task {
     private LocalDateTime startTime;
     private int duration;
     private LocalDateTime endTime;
-    final private Set<Integer> subtasksIdSet; // множество, содержащее идентификаторы подзадач
+    final private Map<Integer, Subtask> subtasksMap;
 
     public Epic(int id, String name, TaskStatus status, String description, LocalDateTime startTime, int duration) {
         super(id, name, description);
         this.status = status;
         this.startTime = startTime;
         this.duration = duration;
-        subtasksIdSet = new HashSet<>();
+        subtasksMap = new HashMap<>();
     }
 
     public Epic(int id, String name, String description) {
@@ -68,15 +68,7 @@ public class Epic extends Task {
         this.endTime = endTime;
     }
 
-    /**
-     * Возвращает идентификаторы всех подзадач эпика в виде HashSet
-     *
-     * @return HashSet c int идентификаторами подзадач
-     */
-    public Set<Integer> getSubtasksIdSet() {
-        return subtasksIdSet;
-    }
-
+    public Map<Integer, Subtask> getSubtasksMap() { return subtasksMap; }
 
     @Override
     public String toString() {
@@ -95,7 +87,7 @@ public class Epic extends Task {
             result.append("startTime=null").append(", ");
         }
         result.append("duration=").append(getDuration()).append(", ");
-        result.append("subtasks=").append(getSubtasksIdSet());
+        result.append("subtasks=").append(getSubtasksMap().values());
         result.append('}');
         return result.toString();
     }
@@ -107,14 +99,14 @@ public class Epic extends Task {
         if (!super.equals(o)) return false;
         Epic epic = (Epic) o;
         return Objects.equals(getStatus(), epic.getStatus())
-                && Objects.equals(getSubtasksIdSet(), epic.getSubtasksIdSet());
+                && Objects.equals(getSubtasksMap().keySet(), epic.getSubtasksMap().keySet());
     }
 
     @Override
     public int hashCode() {
         int hash = super.hashCode();
         hash = 31 * hash + (getStatus() != null ? getStatus().hashCode() : 0);
-        hash = 31 * hash + (getSubtasksIdSet() != null ? getSubtasksIdSet().hashCode() : 0);
+        hash = 31 * hash + (getSubtasksMap() != null ? getSubtasksMap().keySet().hashCode() : 0);
         return hash;
     }
 }

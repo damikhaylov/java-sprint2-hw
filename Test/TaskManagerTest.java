@@ -105,7 +105,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         assertEquals(subtaskA, subtasks.get(0),
                 "Подзадача не соответствует сохранённой в списке подзадач");
 
-        final Set<Integer> epicSubtasks = epicA.getSubtasksIdSet();
+        final Set<Integer> epicSubtasks = epicA.getSubtasksMap().keySet();
         assertNotNull(epicSubtasks, "Набор id подзадач эпика не возвращается");
         assertEquals(1, epicSubtasks.size(), "Неверное количество id подзадач в эпике.");
         assertTrue(epicSubtasks.contains(subtaskA.getId()), "id подзадачи не добавлен к эпику.");

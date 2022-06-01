@@ -5,29 +5,28 @@ import ru.yandex.practicum.tasktracker.model.Subtask;
 import ru.yandex.practicum.tasktracker.model.TaskStatus;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 // TODO: Комментарий для ревью (удалить после спринта 6) - логика для вычисления свойств эпика, которая после замечаний
 //  ревью была перенесена в TaskManager, сейчас вынесена во вспомогательный класс со статическими методами
 
 public class EpicPropertiesHelper {
 
-    protected static void calculateAndSet(Epic epic, Map<Integer, Subtask> subtasks) {
-        setEpicStatusBySubtasks(epic, subtasks);
-        setEpicTimesBySubtasks(epic, subtasks);
+    protected static void calculateAndSet(Epic epic) {
+        setEpicStatusBySubtasks(epic);
+        setEpicTimesBySubtasks(epic);
     }
 
     /**
      * Назначает статус эпика на основе статусов его подзадач
      */
-    private static void setEpicStatusBySubtasks(Epic epic, Map<Integer, Subtask> subtasks) {
-        if (epic.getSubtasksIdSet().size() == 0) {
+    private static void setEpicStatusBySubtasks(Epic epic) {
+        if (epic.getSubtasksMap().size() == 0) {
             epic.setStatus(TaskStatus.NEW);
             return;
         }
         TaskStatus newStatus = null;
-        for (int id : epic.getSubtasksIdSet()) {
-            TaskStatus subtaskStatus = subtasks.get(id).getStatus();
+        for (Subtask subtask : epic.getSubtasksMap().values()) {
+            TaskStatus subtaskStatus = subtask.getStatus();
             if (newStatus == null) { // Блок для присвоения переменной статуса первой подзадачи
                 newStatus = subtaskStatus;
             }
@@ -45,8 +44,8 @@ public class EpicPropertiesHelper {
     /**
      * Назначает время начала, окончания и продолжительность эпика на основе значений для подзадач
      */
-    private static void setEpicTimesBySubtasks(Epic epic, Map<Integer, Subtask> subtasks) {
-        if (epic.getSubtasksIdSet().size() == 0) {
+    private static void setEpicTimesBySubtasks(Epic epic) {
+        if (epic.getSubtasksMap().size() == 0) {
             epic.setStartTime(null);
             epic.setDuration(0);
             epic.setEndTime(null);
@@ -56,10 +55,10 @@ public class EpicPropertiesHelper {
         LocalDateTime startTime = null;
         LocalDateTime endTime = null;
         int duration = 0;
-        for (int id : epic.getSubtasksIdSet()) {
-            LocalDateTime subtaskStartTime = subtasks.get(id).getStartTime();
-            LocalDateTime subtaskEndTime = subtasks.get(id).getEndTime();
-            int subtaskDuration = subtasks.get(id).getDuration();
+        for (Subtask subtask : epic.getSubtasksMap().values()) {
+            LocalDateTime subtaskStartTime = subtask.getStartTime();
+            LocalDateTime subtaskEndTime = subtask.getEndTime();
+            int subtaskDuration = subtask.getDuration();
 
             duration += subtaskDuration;
 

@@ -199,7 +199,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     Subtask subtask = (Subtask) task;
                     Epic epic = subtask.getEpic();
                     this.subtasks.put(subtask.getId(), subtask);
-                    epic.getSubtasksIdSet().add(subtask.getId());
+                    epic.getSubtasksMap().put(subtask.getId(), subtask);
                 } else {
                     this.tasks.put(task.getId(), task);
                 }
