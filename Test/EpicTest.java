@@ -34,11 +34,6 @@ public class EpicTest {
     protected final LocalDateTime END_TIME_LAST = START_TIME_LAST.plusMinutes(DURATION_LAST);
     protected final int DURATION_SUM = DURATION_FIRST + DURATION_MIDDLE + DURATION_LAST;
 
-
-    // TODO: Комментарий для ревью (удалить после спринта 6) - Поскольку вся логика по вычислению статуса эпиков
-    //  по замечаниям код-ревью была перенесена из класса Epic в InMemoryTaskManager, то тесты изменения статусов
-    //  выполняются через методы InMemoryTaskManager.
-
     @BeforeEach
     void beforeEach() {
         taskManager = new InMemoryTaskManager();

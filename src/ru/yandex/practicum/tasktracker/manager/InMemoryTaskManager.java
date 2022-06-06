@@ -313,9 +313,6 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    // TODO: Комментарий для ревью (удалить после спринта 6) - Выбран простой алгоритм проверки пересечения задач по
-    //  времени, но не за O(n) по списку getPrioritizedTasks(), а за O(log n) непосредственно по дереву
-
     protected boolean isTaskTimeOverlappingAnother(Task task) {
         if (task.getStartTime() == null) {
             return false;

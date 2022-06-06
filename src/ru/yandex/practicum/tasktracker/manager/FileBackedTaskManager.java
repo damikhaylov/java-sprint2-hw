@@ -25,8 +25,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private final File file;
 
-    // TODO: Комментарий для ревью (удалить после спринта 6) - Конструктор дополнен аргументом, позволяющим считывать
-    //  или не считывать данные из файла для бэкапа (для более ясного поведения менеджера при тестировании)
     public FileBackedTaskManager(File file, boolean isFileForReadData) {
         this.file = file;
 

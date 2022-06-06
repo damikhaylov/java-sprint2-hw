@@ -6,9 +6,6 @@ import ru.yandex.practicum.tasktracker.model.TaskStatus;
 
 import java.time.LocalDateTime;
 
-// TODO: Комментарий для ревью (удалить после спринта 6) - логика для вычисления свойств эпика, которая после замечаний
-//  ревью была перенесена в TaskManager, сейчас вынесена во вспомогательный класс со статическими методами
-
 public class EpicPropertiesHelper {
 
     protected static void calculateAndSet(Epic epic) {
