@@ -1,26 +1,25 @@
 package ru.yandex.practicum.tasktracker.model;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 public class Subtask extends Task {
 
-    final private Epic epic;
+    private int epicId;
 
     public Subtask(int id, String name, TaskStatus status, String description,
-                   LocalDateTime startTime, int duration, Epic epic) {
+                   LocalDateTime startTime, int duration, int epicId) {
         super(id, name, status, description, startTime, duration);
-        this.epic = epic;
+        this.epicId = epicId;
     }
 
     public Subtask(String name, TaskStatus status, String description,
-                   LocalDateTime startTime, int duration, Epic epic) {
+                   LocalDateTime startTime, int duration, int epicId) {
         super(name, status, description, startTime, duration);
-        this.epic = epic;
+        this.epicId = epicId;
     }
 
-    public Epic getEpic() {
-        return epic;
+    public int getEpicId() {
+        return epicId;
     }
 
     @Override
@@ -40,7 +39,7 @@ public class Subtask extends Task {
             result.append("startTime=null").append(", ");
         }
         result.append("duration=").append(getDuration()).append(", ");
-        result.append("epic.id=").append(epic.getId());
+        result.append("epic.id=").append(getEpicId());
         result.append('}');
         return result.toString();
     }
@@ -51,13 +50,13 @@ public class Subtask extends Task {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Subtask subtask = (Subtask) o;
-        return Objects.equals(getEpic(), subtask.getEpic());
+        return getEpicId() == getEpicId();
     }
 
     @Override
     public int hashCode() {
         int hash = super.hashCode();
-        hash = 31 * hash + (getEpic() != null ? getEpic().hashCode() : 0);
+        hash = 31 * hash + getEpicId();
         return hash;
     }
 }

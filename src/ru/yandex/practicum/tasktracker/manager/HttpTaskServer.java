@@ -31,15 +31,11 @@ public class HttpTaskServer {
 
     public static void main(String[] args) {
         try {
-            GsonBuilder gsonBuilder = new GsonBuilder()
-                    .serializeNulls()
-                    .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
-            Gson gson1 = gsonBuilder.create();
-            System.out.println(gson1.toJson(taskManager.getSubtask(4)));
             HttpServer httpServer = HttpServer.create();
             httpServer.bind(new InetSocketAddress(PORT), 0);
             httpServer.createContext("/tasks", new TasksHandler());
             httpServer.start();
+            System.out.println("HTTP-сервер запущен на " + PORT + " порту.");
             //httpServer.stop(1); // остановка сервера
         } catch (IOException e) {
             e.printStackTrace();
@@ -69,12 +65,6 @@ public class HttpTaskServer {
                     .serializeNulls()
                     .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
             Gson gson = gsonBuilder.create();
-
-
-
-
-
-
 
             String method = httpExchange.getRequestMethod();
             String path = httpExchange.getRequestURI().getPath();
@@ -113,7 +103,7 @@ public class HttpTaskServer {
                     response = gson.toJson(taskManager.getHistory());;
                     break;
                 case "GET /tasks/":
-                    response = gson.toJson(taskManager.getTasks());
+                    response = gson.toJson(taskManager.getPrioritizedTasks());
                     break;
                 default:
                     response = "Действие не определено.";
@@ -132,11 +122,16 @@ class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
 
     @Override
     public void write(final JsonWriter jsonWriter, final LocalDateTime localDateTime) throws IOException {
-        jsonWriter.value(localDateTime.format(formatter));
+        if (localDateTime != null) {
+            jsonWriter.value(localDateTime.format(formatter));
+        } else {
+            jsonWriter.value("null");
+        }
     }
 
     @Override
     public LocalDateTime read(final JsonReader jsonReader) throws IOException {
-        return LocalDateTime.parse(jsonReader.nextString(), formatter);
+        String value = jsonReader.nextString();
+        return (!value.equals("null")) ? LocalDateTime.parse(jsonReader.nextString(), formatter) : null;
     }
 }

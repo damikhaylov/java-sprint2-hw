@@ -87,7 +87,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
         taskManager.addTaskOfAnyType(epicA);
         subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask", TaskStatus.NEW,
-                "Subtask description", LocalDateTime.now(), 30, epicA);
+                "Subtask description", LocalDateTime.now(), 30, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskA);
 
         final Subtask savedSubtask = taskManager.getSubtask(subtaskA.getId());
@@ -113,7 +113,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
             "относится к null-эпику")
     void addSubtaskDoesNotExecuteIfSubtasksEpicIsNullTest() {
         subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask", TaskStatus.NEW,
-                "Subtask description", LocalDateTime.now(), 30, null);
+                "Subtask description", LocalDateTime.now(), 30, 0);
 
         assertEquals(0, taskManager.addTaskOfAnyType(subtaskA),
                 "При добавлении задачи с null-эпиком метод возвращает не 0");
@@ -125,27 +125,11 @@ abstract class TaskManagerTest<T extends TaskManager> {
             "относится к ещё не добавленному эпику")
     void addSubtaskDoesNotExecuteIfSubtasksEpicDoesNotContainsInEpicsTest() {
         subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask", TaskStatus.NEW,
-                "Subtask description", LocalDateTime.now(), 30, epicA);
+                "Subtask description", LocalDateTime.now(), 30, epicA.getId());
 
         assertEquals(0, taskManager.addTaskOfAnyType(subtaskA),
                 "При добавлении задачи с ещё не добавленным эпиком метод возвращает не 0");
         assertTrue(taskManager.getEpics().isEmpty(), "Список эпиков не пустой.");
-        assertTrue(taskManager.getSubtasks().isEmpty(), "Список подзадач не пустой.");
-    }
-
-    @Test
-    @DisplayName("addTaskOfAnyType(subtask) должен прерываться, возвращая 0, если добавляемая подзадача " +
-            "относится к эпику, который отличается от сохранённого с его id")
-    void addSubtaskDoesNotExecuteIfSubtasksEpicDoesNotEqualsValueFromEpicsTest() {
-        epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
-        taskManager.addTaskOfAnyType(epicA);
-        epicB = TasksHelper.replaceTaskId(epicB, epicA.getId());
-        subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask", TaskStatus.NEW,
-                "Subtask description", LocalDateTime.now(), 30, epicB);
-
-        assertEquals(0, taskManager.addTaskOfAnyType(subtaskA),
-                "При добавлении задачи с эпиком, не совпадающим с сохранённым, метод возвращает не 0");
-        assertFalse(taskManager.getEpics().isEmpty(), "Список эпиков пуст.");
         assertTrue(taskManager.getSubtasks().isEmpty(), "Список подзадач не пустой.");
     }
 
@@ -250,13 +234,13 @@ abstract class TaskManagerTest<T extends TaskManager> {
         epicB = TasksHelper.replaceTaskId(epicB, taskManager.getNextTaskId());
         taskManager.addTaskOfAnyType(epicB);
         subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask A", TaskStatus.NEW,
-                "Subtask A description", null, 30, epicA);
+                "Subtask A description", null, 30, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskA);
         subtaskB = new Subtask(taskManager.getNextTaskId(), "Subtask B", TaskStatus.IN_PROGRESS,
-                "Subtask B description", null, 30, epicA);
+                "Subtask B description", null, 30, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskB);
         subtaskC = new Subtask(taskManager.getNextTaskId(), "Subtask C", TaskStatus.DONE,
-                "Subtask C description", null, 30, epicB);
+                "Subtask C description", null, 30, epicB.getId());
         taskManager.addTaskOfAnyType(subtaskC);
 
         List<Subtask> subtasks = taskManager.getSubtasks();
@@ -310,10 +294,10 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.addTaskOfAnyType(epicA);
 
         subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask A", TaskStatus.NEW,
-                "Subtask A description", null, 30, epicA);
+                "Subtask A description", null, 30, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskA);
         subtaskB = new Subtask(taskManager.getNextTaskId(), "Subtask B", TaskStatus.IN_PROGRESS,
-                "Subtask B description", null, 30, epicA);
+                "Subtask B description", null, 30, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskB);
 
         taskManager.removeAllSubtasks();
@@ -412,10 +396,10 @@ abstract class TaskManagerTest<T extends TaskManager> {
         epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
         taskManager.addTaskOfAnyType(epicA);
         subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask A", TaskStatus.NEW,
-                "Subtask A description", LocalDateTime.now(), 30, epicA);
+                "Subtask A description", LocalDateTime.now(), 30, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskA);
         subtaskB = new Subtask(subtaskA.getId(), "Subtask B", TaskStatus.IN_PROGRESS,
-                "Subtask B description", null, 15, epicA);
+                "Subtask B description", null, 15, epicA.getId());
 
         assertTrue(taskManager.replaceSubtask(subtaskB),
                 "Метод возвращает не true при стандартной замене подзадачи.");
@@ -430,10 +414,10 @@ abstract class TaskManagerTest<T extends TaskManager> {
         epicB = TasksHelper.replaceTaskId(epicB, taskManager.getNextTaskId());
         taskManager.addTaskOfAnyType(epicB);
         subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask A", TaskStatus.NEW,
-                "Subtask A description", LocalDateTime.now(), 30, epicA);
+                "Subtask A description", LocalDateTime.now(), 30, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskA);
         subtaskB = new Subtask(subtaskA.getId(), "Subtask B", TaskStatus.IN_PROGRESS,
-                "Subtask B description", null, 15, epicB);
+                "Subtask B description", null, 15, epicB.getId());
 
         assertFalse(taskManager.replaceSubtask(subtaskB),
                 "Метод возвращает не false при неправильном эпике в заменяющей подзадаче.");
@@ -445,10 +429,10 @@ abstract class TaskManagerTest<T extends TaskManager> {
         epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
         taskManager.addTaskOfAnyType(epicA);
         subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask A", TaskStatus.NEW,
-                "Subtask A description", LocalDateTime.now(), 30, epicA);
+                "Subtask A description", LocalDateTime.now(), 30, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskA);
         subtaskB = new Subtask(subtaskA.getId(), "Subtask B", TaskStatus.IN_PROGRESS,
-                "Subtask B description", null, 15, null);
+                "Subtask B description", null, 15, 0);
 
         assertFalse(taskManager.replaceSubtask(subtaskB),
                 "Метод возвращает не false при null-эпике в заменяющей подзадаче.");
@@ -460,7 +444,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
         taskManager.addTaskOfAnyType(epicA);
         subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask A", TaskStatus.NEW,
-                "Subtask A description", LocalDateTime.now(), 30, epicA);
+                "Subtask A description", LocalDateTime.now(), 30, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskA);
         assertFalse(taskManager.replaceSubtask(null), "Метод возвращает не false при аргументе null.");
     }
@@ -472,10 +456,10 @@ abstract class TaskManagerTest<T extends TaskManager> {
         epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
         taskManager.addTaskOfAnyType(epicA);
         subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask A", TaskStatus.NEW,
-                "Subtask A description", LocalDateTime.now(), 30, epicA);
+                "Subtask A description", LocalDateTime.now(), 30, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskA);
         subtaskB = new Subtask(id, "Subtask B", TaskStatus.IN_PROGRESS, "Subtask B description",
-                null, 15, epicA);
+                null, 15, epicA.getId());
 
         assertFalse(taskManager.replaceSubtask(subtaskB),
                 "Метод возвращает не false при несуществующем id у заменяющей подзадачи.");
@@ -489,10 +473,10 @@ abstract class TaskManagerTest<T extends TaskManager> {
         epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
         taskManager.addTaskOfAnyType(epicA);
         subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask A", TaskStatus.NEW,
-                "Subtask A description", LocalDateTime.now(), 30, epicA);
+                "Subtask A description", LocalDateTime.now(), 30, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskA);
         subtaskB = new Subtask(taskManager.getNextTaskId(), "Subtask B", TaskStatus.IN_PROGRESS,
-                "Subtask B description", null, 15, epicA);
+                "Subtask B description", null, 15, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskB);
 
         taskManager.removeTaskOfAnyTypeById(taskA.getId());
@@ -515,7 +499,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
         taskManager.addTaskOfAnyType(epicA);
         subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask A", TaskStatus.NEW,
-                "Subtask A description", LocalDateTime.now(), 30, epicA);
+                "Subtask A description", LocalDateTime.now(), 30, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskA);
 
         taskManager.removeTaskOfAnyTypeById(id);
@@ -567,7 +551,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         // замена самой приоритетной задачи на задачу без приоритета
         // задача должна переместиться в самый конец, поскольку у неё также был последний id
         subtaskD = new Subtask(subtaskA.getId(), "Subtask D", TaskStatus.NEW,
-                "Subtask B description", null, 0, epicA);
+                "Subtask B description", null, 0, epicA.getId());
 
         taskManager.replaceSubtask(subtaskD);
         manualOrderedTasksList.remove(0);
@@ -605,7 +589,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
         subtaskD = new Subtask(taskManager.getNextTaskId(), "Subtask D", TaskStatus.NEW,
                 "Subtask B description",
-                startTime, duration, epicA);
+                startTime, duration, epicA.getId());
 
         assertEquals(isOverlapping, (taskManager.addTaskOfAnyType(subtaskD) == 0),
                 "Результат добавления подзадачи не соответствует ожидаемому.");
@@ -636,7 +620,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
         subtaskD = new Subtask(subtaskC.getId(), "Subtask D", TaskStatus.NEW,
                 "Subtask B description",
-                startTime, duration, epicA);
+                startTime, duration, epicA.getId());
 
         assertEquals(isOverlapping, !taskManager.replaceSubtask(subtaskD),
                 "Результат замены подзадачи не соответствует ожидаемому.");
@@ -666,19 +650,19 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
         // Задачам и подзадачам присвоены значения в порядке возрастания даты начала
         subtaskA = new Subtask("Subtask A", TaskStatus.NEW, "Subtask A description",
-                LocalDateTime.of(2022, 6, 1, 10, 30), 30, epicA);
+                LocalDateTime.of(2022, 6, 1, 10, 30), 30, epicA.getId());
 
         taskA = new Task("Task A", TaskStatus.NEW, "Task A description",
                 LocalDateTime.of(2022, 6, 1, 15, 15), 15);
 
         subtaskB = new Subtask("Subtask B", TaskStatus.NEW, "Subtask B description",
-                LocalDateTime.of(2022, 6, 5, 18, 0), 120, epicA);
+                LocalDateTime.of(2022, 6, 5, 18, 0), 120, epicA.getId());
 
         taskB = new Task("Task B", TaskStatus.NEW, "Task B description",
                 null, 20);
 
         subtaskC = new Subtask("Subtask B", TaskStatus.NEW, "Subtask B description",
-                null, 0, epicA);
+                null, 0, epicA.getId());
 
         // Задачам и подзадачам записываются в менеджер в перемешанном порядке
 

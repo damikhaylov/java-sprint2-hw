@@ -85,7 +85,8 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeAllSubtasks() {
         for (Epic epic : epics.values()) {
             epic.getSubtasksMap().clear();
-            EpicPropertiesHelper.calculateAndSet(epic);
+            Epic updatedEpic = EpicPropertiesHelper.calculateAndSet(epic);
+            replaceEpic(updatedEpic);
         }
         removeTasksFromHistoryByIDSet(subtasks.keySet()); // удаление всех подзадач из истории просмотров
         removeAnyTypeTaskCollectionFromPrioritizedTasks(subtasks.values());
@@ -155,15 +156,12 @@ public class InMemoryTaskManager implements TaskManager {
             epics.put(task.getId(), (Epic) task);
         } else if (task.getClass() == Subtask.class) {
             Subtask subtask = (Subtask) task;
-            Epic epic = subtask.getEpic();
+            Epic epic = epics.get(subtask.getEpicId());
             if (epic == null) {
                 return 0;
             }
             if (!epics.containsKey(epic.getId())) { // Если эпик переданной подзадачи ещё не внесён в менеджер
                 return 0;
-            }
-            if (!epic.equals(epics.get(epic.getId()))) {  // Если эпик переданной подзадачи не соответствует
-                return 0;                                     // внесённому в менеджер
             }
             if (isTaskTimeOverlappingAnother(subtask)) {
                 return 0;
@@ -171,7 +169,8 @@ public class InMemoryTaskManager implements TaskManager {
             subtasks.put(subtask.getId(), subtask);
             prioritizedTasks.add(subtask);
             epic.getSubtasksMap().put(subtask.getId(), subtask);
-            EpicPropertiesHelper.calculateAndSet(epic);
+            Epic updatedEpic = EpicPropertiesHelper.calculateAndSet(epic);
+            replaceEpic(updatedEpic);
         } else {
             if (isTaskTimeOverlappingAnother(task)) {
                 return 0;
@@ -219,6 +218,7 @@ public class InMemoryTaskManager implements TaskManager {
             epic.getSubtasksMap().clear();
             epic.getSubtasksMap().putAll(epics.get(epic.getId()).getSubtasksMap());
             epics.replace(epic.getId(), epic);
+
             return true;
         } else {
             return false;
@@ -236,7 +236,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (subtask == null) {
             return false;
         }
-        Epic epic = subtask.getEpic();
+        Epic epic = epics.get(subtask.getEpicId());
         if (epic == null) {
             return false;
         }
@@ -251,7 +251,8 @@ public class InMemoryTaskManager implements TaskManager {
         epic.getSubtasksMap().replace(subtask.getId(), subtask); // замена в таблице подзадач эпика
         prioritizedTasks.remove(originSubtask);
         prioritizedTasks.add(subtask);
-        EpicPropertiesHelper.calculateAndSet(epic);
+        Epic updatedEpic = EpicPropertiesHelper.calculateAndSet(epic);
+        replaceEpic(updatedEpic);
         return true;
     }
 
@@ -276,11 +277,12 @@ public class InMemoryTaskManager implements TaskManager {
             epics.remove(id); // удаление эпика
         } else {
             if (subtasks.containsKey(id)) {
-                Epic epic = subtasks.get(id).getEpic();
+                Epic epic = epics.get(subtasks.get(id).getEpicId());
                 epic.getSubtasksMap().remove(id); // удаление подзадачи из таблицы подзадач эпика
                 prioritizedTasks.remove(subtasks.get(id));
                 subtasks.remove(id); // удаление подзадачи из таблицы подзадач
-                EpicPropertiesHelper.calculateAndSet(epic);
+                Epic updatedEpic = EpicPropertiesHelper.calculateAndSet(epic);
+                replaceEpic(updatedEpic);
             }
         }
         historyManager.remove(id); // удаление задачи некоторого типа с заданным id также из истории просмотров

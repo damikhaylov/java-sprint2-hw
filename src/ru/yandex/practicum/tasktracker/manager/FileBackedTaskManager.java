@@ -75,7 +75,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 task.getDescription(),
                 ((task.getStartTime() != null) ? task.getStartTime().format(FORMATTER) : "null"),
                 String.valueOf(task.getDuration()),
-                ((task instanceof Subtask) ? String.valueOf(((Subtask) task).getEpic().getId()) : "")
+                ((task instanceof Subtask) ? String.valueOf(((Subtask) task).getEpicId()) : "")
         );
     }
 
@@ -128,7 +128,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 throw new ManagerLoadException(
                         String.format("Подзадача ссылается на несуществующий эпик в строке:%n%s", value));
             }
-            return new Subtask(id, name, status, description, startTime, duration, epic);
+            return new Subtask(id, name, status, description, startTime, duration, epicId);
         } else {
             return new Task(id, name, status, description, startTime, duration);
         }
@@ -190,16 +190,23 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
                     return; // завершаем работу метода, менеджер останется пустым
                 }
-
                 if (task.getClass() == Epic.class) {
                     this.epics.put(task.getId(), (Epic) task);
                 } else if (task.getClass() == Subtask.class) {
                     Subtask subtask = (Subtask) task;
-                    Epic epic = subtask.getEpic();
+                    if (isTaskTimeOverlappingAnother(subtask)) {
+                        break;
+                    }
+                    Epic epic = epics.get(subtask.getEpicId());
                     this.subtasks.put(subtask.getId(), subtask);
                     epic.getSubtasksMap().put(subtask.getId(), subtask);
+                    this.prioritizedTasks.add(subtask);
                 } else {
+                    if (isTaskTimeOverlappingAnother(task)) {
+                        break;
+                    }
                     this.tasks.put(task.getId(), task);
+                    this.prioritizedTasks.add(task);
                 }
 
                 if (task.getId() >= this.nextTaskId) {

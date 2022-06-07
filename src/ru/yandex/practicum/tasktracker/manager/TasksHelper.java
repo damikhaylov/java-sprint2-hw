@@ -22,6 +22,6 @@ public class TasksHelper {
 
     public static Subtask replaceTaskId(Subtask subtask, int id) {
         return new Subtask(id, subtask.getName(), subtask.getStatus(), subtask.getDescription(),
-                subtask.getStartTime(), subtask.getDuration(), subtask.getEpic());
+                subtask.getStartTime(), subtask.getDuration(), subtask.getEpicId());
     }
 }

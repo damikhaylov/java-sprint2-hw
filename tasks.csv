@@ -6,4 +6,4 @@ id,type,name,status,description,start,duration,epic
 5,SUBTASK,Subtask B,IN_PROGRESS,Subtask B description,null,15,3
 6,SUBTASK,Subtask C,DONE,Subtask C description,03.06.2022 15:00,15,3
 
-1,5,2,3,4
+1,2,3,4,5,6

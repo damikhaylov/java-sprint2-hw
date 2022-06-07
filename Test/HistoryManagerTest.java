@@ -29,7 +29,7 @@ public class HistoryManagerTest {
                 LocalDateTime.now(), 15);
         epicA = new Epic(2, "Epic A", "Epic A description");
         subtaskA = new Subtask(3, "Subtask A", TaskStatus.NEW, "Subtask A description",
-                LocalDateTime.now(), 15, epicA);
+                LocalDateTime.now(), 15, epicA.getId());
         historyManager.add(taskA);
         historyManager.add(epicA);
         historyManager.add(subtaskA);

@@ -17,7 +17,7 @@ import static ru.yandex.practicum.tasktracker.model.TaskStatus.*;
 
 public class EpicTest {
     protected InMemoryTaskManager taskManager;
-    protected Epic epicA;
+    protected int epicId;
     protected Subtask subtaskFirst;
     protected Subtask subtaskMiddle;
     protected Subtask subtaskLast;
@@ -37,8 +37,7 @@ public class EpicTest {
     @BeforeEach
     void beforeEach() {
         taskManager = new InMemoryTaskManager();
-        epicA = new Epic(1, "Epic A", "Epic A description");
-        taskManager.addTaskOfAnyType(epicA);
+        epicId = taskManager.addTaskOfAnyType(new Epic(1, "Epic A", "Epic A description"));
     }
 
     @DisplayName("Тест на изменение статуса эпика при добавлении подзадач")
@@ -48,7 +47,7 @@ public class EpicTest {
                                                    TaskStatus epicStatus) {
 
         Add3Subtasks(subStatusA, subStatusB, subStatusC);
-        assertEquals(epicStatus, epicA.getStatus(),
+        assertEquals(epicStatus, taskManager.getEpic(epicId).getStatus(),
                 "Статус эпика не соответствует обобщённому статусу подзадач.");
     }
 
@@ -60,7 +59,7 @@ public class EpicTest {
 
         Add3Subtasks(subStatusA, subStatusB, subStatusC);
         taskManager.removeTaskOfAnyTypeById(subtaskLast.getId());
-        assertEquals(epicStatus, epicA.getStatus(),
+        assertEquals(epicStatus, taskManager.getEpic(epicId).getStatus(),
                 "Статус эпика не соответствует обобщённому статусу подзадач.");
     }
 
@@ -73,9 +72,9 @@ public class EpicTest {
 
         Add3Subtasks(subStatusA, subStatusB, subStatusC);
         subtaskD = new Subtask(subtaskLast.getId(), "Subtask D", replacingStatus, "Subtask D description",
-                null, 0, epicA);
+                null, 0, epicId);
         taskManager.replaceSubtask(subtaskD);
-        assertEquals(epicStatus, epicA.getStatus(),
+        assertEquals(epicStatus, taskManager.getEpic(epicId).getStatus(),
                 "Статус эпика не соответствует обобщённому статусу подзадач.");
     }
 
@@ -87,7 +86,7 @@ public class EpicTest {
         taskManager.removeTaskOfAnyTypeById(subtaskFirst.getId());
         taskManager.removeTaskOfAnyTypeById(subtaskMiddle.getId());
         taskManager.removeTaskOfAnyTypeById(subtaskLast.getId());
-        assertEquals(NEW, epicA.getStatus(),
+        assertEquals(NEW, taskManager.getEpic(epicId).getStatus(),
                 "Статус эпика не соответствует обобщённому статусу подзадач.");
     }
 
@@ -96,28 +95,28 @@ public class EpicTest {
     void changingEpicStatusToNewAfterRemovingAllSubtasksTest() {
         Add3Subtasks();
         taskManager.removeAllSubtasks();
-        assertEquals(NEW, epicA.getStatus(),
+        assertEquals(NEW, taskManager.getEpic(epicId).getStatus(),
                 "Статус эпика не соответствует обобщённому статусу подзадач.");
     }
 
     @Test
     @DisplayName("Тест на начальные значения времён эпика")
     void setEpicDefaultTimesAfterCreationTest() {
-        assertEquals(0, epicA.getDuration(),
+        assertEquals(0, taskManager.getEpic(epicId).getDuration(),
                 "Длительность эпика не 0.");
-        assertNull(epicA.getStartTime(), "Начало эпика не null.");
-        assertNull(epicA.getEndTime(), "Конец эпика не null.");
+        assertNull(taskManager.getEpic(epicId).getStartTime(), "Начало эпика не null.");
+        assertNull(taskManager.getEpic(epicId).getEndTime(), "Конец эпика не null.");
     }
 
     @Test
     @DisplayName("Тест на изменение времён эпика при добавлении подзадач")
     void changingEpicTimesAfterAddingSubtasksTest() {
         Add3Subtasks();
-        assertEquals(DURATION_SUM, epicA.getDuration(),
+        assertEquals(DURATION_SUM, taskManager.getEpic(epicId).getDuration(),
                 "Длительность эпика не соответствует длительности подзадач.");
-        assertEquals(START_TIME_FIRST, epicA.getStartTime(),
+        assertEquals(START_TIME_FIRST, taskManager.getEpic(epicId).getStartTime(),
                 "Начало эпика не соответствует началу самой ранней подзадачи.");
-        assertEquals(END_TIME_LAST, epicA.getEndTime(),
+        assertEquals(END_TIME_LAST, taskManager.getEpic(epicId).getEndTime(),
                 "Конец эпика не соответствует концу самой поздней подзадачи.");
     }
 
@@ -126,11 +125,11 @@ public class EpicTest {
     void changingEpicTimesAfterRemovingFirstSubtaskTest() {
         Add3Subtasks(); // Серединная задача имеет startTime = null;
         taskManager.removeTaskOfAnyTypeById(subtaskFirst.getId());
-        assertEquals(DURATION_MIDDLE + DURATION_LAST, epicA.getDuration(),
+        assertEquals(DURATION_MIDDLE + DURATION_LAST, taskManager.getEpic(epicId).getDuration(),
                 "Длительность эпика не соответствует длительности подзадач.");
-        assertEquals(subtaskLast.getStartTime(), epicA.getStartTime(),
+        assertEquals(subtaskLast.getStartTime(), taskManager.getEpic(epicId).getStartTime(),
                 "Начало эпика не соответствует началу самой ранней подзадачи.");
-        assertEquals(subtaskLast.getEndTime(), epicA.getEndTime(),
+        assertEquals(subtaskLast.getEndTime(), taskManager.getEpic(epicId).getEndTime(),
                 "Конец эпика не соответствует концу самой поздней подзадачи.");
     }
 
@@ -139,11 +138,11 @@ public class EpicTest {
     void changingEpicTimesAfterRemovingLastSubtaskTest() {
         Add3Subtasks();  // Серединная задача имеет startTime = null;
         taskManager.removeTaskOfAnyTypeById(subtaskLast.getId());
-        assertEquals(DURATION_FIRST + DURATION_MIDDLE, epicA.getDuration(),
+        assertEquals(DURATION_FIRST + DURATION_MIDDLE, taskManager.getEpic(epicId).getDuration(),
                 "Длительность эпика не соответствует длительности подзадач.");
-        assertEquals(subtaskFirst.getStartTime(), epicA.getStartTime(),
+        assertEquals(subtaskFirst.getStartTime(), taskManager.getEpic(epicId).getStartTime(),
                 "Начало эпика не соответствует началу самой ранней подзадачи.");
-        assertEquals(subtaskFirst.getEndTime(), epicA.getEndTime(),
+        assertEquals(subtaskFirst.getEndTime(), taskManager.getEpic(epicId).getEndTime(),
                 "Конец эпика не соответствует концу самой поздней подзадачи.");
     }
 
@@ -152,13 +151,13 @@ public class EpicTest {
     void changingEpicTimesAfterReplacingFirstSubtaskTest() {
         Add3Subtasks();  // Серединная задача имеет startTime = null;
         subtaskD = new Subtask(subtaskFirst.getId(), "Subtask D", NEW, "Subtask D description",
-                START_TIME_FIRST.minusDays(1), DURATION_FIRST + 15, epicA);
+                START_TIME_FIRST.minusDays(1), DURATION_FIRST + 15, epicId);
         taskManager.replaceSubtask(subtaskD);
-        assertEquals(DURATION_SUM + 15, epicA.getDuration(),
+        assertEquals(DURATION_SUM + 15, taskManager.getEpic(epicId).getDuration(),
                 "Длительность эпика не соответствует длительности подзадач.");
-        assertEquals(subtaskD.getStartTime(), epicA.getStartTime(),
+        assertEquals(subtaskD.getStartTime(), taskManager.getEpic(epicId).getStartTime(),
                 "Начало эпика не соответствует началу самой ранней подзадачи.");
-        assertEquals(END_TIME_LAST, epicA.getEndTime(),
+        assertEquals(END_TIME_LAST, taskManager.getEpic(epicId).getEndTime(),
                 "Конец эпика не соответствует концу самой поздней подзадачи.");
     }
 
@@ -167,13 +166,13 @@ public class EpicTest {
     void changingEpicTimesAfterReplacingLastSubtaskTest() {
         Add3Subtasks();  // Серединная задача имеет startTime = null;
         subtaskD = new Subtask(subtaskLast.getId(), "Subtask D", NEW, "Subtask D description",
-                START_TIME_LAST.plusDays(1), DURATION_LAST + 15, epicA);
+                START_TIME_LAST.plusDays(1), DURATION_LAST + 15, epicId);
         taskManager.replaceSubtask(subtaskD);
-        assertEquals(DURATION_SUM + 15, epicA.getDuration(),
+        assertEquals(DURATION_SUM + 15, taskManager.getEpic(epicId).getDuration(),
                 "Длительность эпика не соответствует длительности подзадач.");
-        assertEquals(START_TIME_FIRST, epicA.getStartTime(),
+        assertEquals(START_TIME_FIRST, taskManager.getEpic(epicId).getStartTime(),
                 "Начало эпика не соответствует началу самой ранней подзадачи.");
-        assertEquals(subtaskD.getEndTime(), epicA.getEndTime(),
+        assertEquals(subtaskD.getEndTime(), taskManager.getEpic(epicId).getEndTime(),
                 "Конец эпика не соответствует концу самой поздней подзадачи.");
     }
 
@@ -182,20 +181,20 @@ public class EpicTest {
     void changingEpicTimesAfterRemovingAllSubtasksTest() {
         Add3Subtasks();
         taskManager.removeAllSubtasks();
-        assertEquals(0, epicA.getDuration(), "Длительность эпика не 0.");
-        assertNull(epicA.getStartTime(), "Начало эпика не null.");
-        assertNull(epicA.getEndTime(), "Конец эпика не null.");
+        assertEquals(0, taskManager.getEpic(epicId).getDuration(), "Длительность эпика не 0.");
+        assertNull(taskManager.getEpic(epicId).getStartTime(), "Начало эпика не null.");
+        assertNull(taskManager.getEpic(epicId).getEndTime(), "Конец эпика не null.");
     }
 
     private void Add3Subtasks(TaskStatus statusA, TaskStatus statusB, TaskStatus statusC) {
         subtaskFirst = new Subtask(2, "Subtask A", statusA, "Subtask A description",
-                START_TIME_FIRST, DURATION_FIRST, epicA);
+                START_TIME_FIRST, DURATION_FIRST, epicId);
         taskManager.addTaskOfAnyType(subtaskFirst);
         subtaskMiddle = new Subtask(3, "Subtask B", statusB, "Subtask B description",
-                START_TIME_MIDDLE, DURATION_MIDDLE, epicA);
+                START_TIME_MIDDLE, DURATION_MIDDLE, epicId);
         taskManager.addTaskOfAnyType(subtaskMiddle);
         subtaskLast = new Subtask(4, "Subtask C", statusC, "Subtask C description",
-                START_TIME_LAST, DURATION_LAST, epicA);
+                START_TIME_LAST, DURATION_LAST, epicId);
         taskManager.addTaskOfAnyType(subtaskLast);
     }
 

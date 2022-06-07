@@ -136,15 +136,15 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
 
         subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask A", TaskStatus.NEW,
                 "Subtask A description",
-                LocalDateTime.of(2022, 6, 3, 10, 0), 15, epicA);
+                LocalDateTime.of(2022, 6, 3, 10, 0), 15, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskA);
         subtaskB = new Subtask(taskManager.getNextTaskId(), "Subtask B", TaskStatus.IN_PROGRESS,
                 "Subtask B description",
-                null, 15, epicA);
+                null, 15, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskB);
         subtaskC = new Subtask(taskManager.getNextTaskId(), "Subtask C", TaskStatus.DONE,
                 "Subtask C description",
-                LocalDateTime.of(2022, 6, 3, 15, 0), 15, epicA);
+                LocalDateTime.of(2022, 6, 3, 15, 0), 15, epicA.getId());
         taskManager.addTaskOfAnyType(subtaskC);
     }
 
@@ -153,6 +153,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
         compareTasksLists(taskManager.getEpics(), newTaskManager.getEpics());
         compareTasksLists(taskManager.getSubtasks(), newTaskManager.getSubtasks());
         compareTasksLists(taskManager.getHistory(), newTaskManager.getHistory());
+        compareTasksLists(taskManager.getPrioritizedTasks(), newTaskManager.getPrioritizedTasks());
     }
 
     private void noDataRecordedToManagerCheck() {

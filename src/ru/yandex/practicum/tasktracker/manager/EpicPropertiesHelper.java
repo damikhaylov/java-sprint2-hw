@@ -5,21 +5,25 @@ import ru.yandex.practicum.tasktracker.model.Subtask;
 import ru.yandex.practicum.tasktracker.model.TaskStatus;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 public class EpicPropertiesHelper {
 
-    protected static void calculateAndSet(Epic epic) {
-        setEpicStatusBySubtasks(epic);
-        setEpicTimesBySubtasks(epic);
+    protected static Epic calculateAndSet(Epic epic) {
+        Epic updatedEpic1 = setEpicStatusBySubtasks(epic);
+        Epic updatedEpic2 = setEpicTimesBySubtasks(updatedEpic1);
+        return updatedEpic2;
     }
 
     /**
      * Назначает статус эпика на основе статусов его подзадач
      */
-    private static void setEpicStatusBySubtasks(Epic epic) {
+    private static Epic setEpicStatusBySubtasks(Epic epic) {
+        Epic updatedEpic;
         if (epic.getSubtasksMap().size() == 0) {
-            epic.setStatus(TaskStatus.NEW);
-            return;
+            //epic.setStatus(TaskStatus.NEW);
+            return new Epic(epic.getId(), epic.getName(), TaskStatus.NEW, epic.getDescription(),
+                    epic.getStartTime(), epic.getDuration());
         }
         TaskStatus newStatus = null;
         for (Subtask subtask : epic.getSubtasksMap().values()) {
@@ -35,18 +39,26 @@ public class EpicPropertiesHelper {
                 break;
             }
         }
-        epic.setStatus(newStatus); // Если статус всех подзадач был одинаков, присваиваем его эпику
+        //epic.setStatus(newStatus); // Если статус всех подзадач был одинаков, присваиваем его эпику
+        updatedEpic = new Epic(epic.getId(), epic.getName(), newStatus, epic.getDescription(),
+                epic.getStartTime(), epic.getDuration());
+        updatedEpic.getSubtasksMap().putAll(epic.getSubtasksMap());
+        return updatedEpic;
     }
 
     /**
      * Назначает время начала, окончания и продолжительность эпика на основе значений для подзадач
      */
-    private static void setEpicTimesBySubtasks(Epic epic) {
+    private static Epic setEpicTimesBySubtasks(Epic epic) {
+        Epic updatedEpic;
         if (epic.getSubtasksMap().size() == 0) {
-            epic.setStartTime(null);
-            epic.setDuration(0);
-            epic.setEndTime(null);
-            return;
+            updatedEpic = new Epic(epic.getId(), epic.getName(), epic.getStatus(), epic.getDescription(),
+                    null, 0);
+            updatedEpic.setEndTime(null);
+//            epic.setStartTime(null);
+//            epic.setDuration(0);
+//            epic.setEndTime(null);
+            return updatedEpic;
         }
 
         LocalDateTime startTime = null;
@@ -76,8 +88,14 @@ public class EpicPropertiesHelper {
                 endTime = subtaskEndTime;
             }
         }
-        epic.setStartTime(startTime);
-        epic.setDuration(duration);
-        epic.setEndTime(endTime);
+        updatedEpic = new Epic(epic.getId(), epic.getName(), epic.getStatus(), epic.getDescription(),
+                startTime, duration);
+        updatedEpic.setEndTime(endTime);
+        updatedEpic.getSubtasksMap().putAll(epic.getSubtasksMap());
+        return updatedEpic;
+
+//        epic.setStartTime(startTime);
+//        epic.setDuration(duration);
+//        epic.setEndTime(endTime);
     }
 }
