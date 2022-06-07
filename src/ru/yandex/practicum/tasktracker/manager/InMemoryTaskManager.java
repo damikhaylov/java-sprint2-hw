@@ -56,6 +56,15 @@ public class InMemoryTaskManager implements TaskManager {
         return new ArrayList<>(subtasks.values());
     }
 
+    @Override
+    public ArrayList<Subtask> getEpicSubtasks(int id) {
+        Epic epic = getEpic(id);
+        if (epic == null) {
+            return null;
+        }
+        return new ArrayList<>(epic.getSubtasksMap().values());
+    }
+
     /**
      * Удаляет все задачи
      */
