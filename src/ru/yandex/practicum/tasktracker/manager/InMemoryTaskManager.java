@@ -348,6 +348,7 @@ public class InMemoryTaskManager implements TaskManager {
             prioritizedTasks.remove(originTask);
         }
 
+        // TODO Реализовать случай с исключением из проверки задачи в дереве с тем же id
         Task floorPriorityTask = prioritizedTasks.floor(task);
         Task ceilingPriorityTask = prioritizedTasks.ceiling(task);
 
