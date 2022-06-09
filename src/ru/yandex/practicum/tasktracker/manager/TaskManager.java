@@ -39,7 +39,7 @@ public interface TaskManager {
 
     boolean replaceSubtask(Subtask subtask);
 
-    void removeTaskOfAnyTypeById(int id);
+    boolean removeTaskOfAnyTypeById(int id);
 
     List<Task> getHistory();
 

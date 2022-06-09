@@ -85,9 +85,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @DisplayName("Тест на стандартное добавление подзадачи в менеджер")
     void addNewSubtaskTest() {
         epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
-        taskManager.addTaskOfAnyType(epicA);
+        int epicAId = taskManager.addTaskOfAnyType(epicA);
         subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask", TaskStatus.NEW,
-                "Subtask description", LocalDateTime.now(), 30, epicA.getId());
+                "Subtask description", LocalDateTime.now(), 30, epicAId);
         taskManager.addTaskOfAnyType(subtaskA);
 
         final Subtask savedSubtask = taskManager.getSubtask(subtaskA.getId());
@@ -102,7 +102,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         assertEquals(subtaskA, subtasks.get(0),
                 "Подзадача не соответствует сохранённой в списке подзадач");
 
-        final Set<Integer> epicSubtasks = epicA.getSubtasksMap().keySet();
+        final Set<Integer> epicSubtasks = taskManager.getEpic(epicAId).getSubtasksMap().keySet();
         assertNotNull(epicSubtasks, "Набор id подзадач эпика не возвращается");
         assertEquals(1, epicSubtasks.size(), "Неверное количество id подзадач в эпике.");
         assertTrue(epicSubtasks.contains(subtaskA.getId()), "id подзадачи не добавлен к эпику.");

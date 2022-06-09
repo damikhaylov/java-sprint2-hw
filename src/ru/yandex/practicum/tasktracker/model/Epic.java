@@ -14,8 +14,7 @@ public class Epic extends Task {
     }
 
     public Epic(int id, String name, String description) {
-        this(id, name, TaskStatus.NEW, description,
-                null, 0);
+        this(id, name, TaskStatus.NEW, description, null, 0);
     }
 
     public Epic(String name, String description) {

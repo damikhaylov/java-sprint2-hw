@@ -161,8 +161,10 @@ public class InMemoryTaskManager implements TaskManager {
         }
 
         if (task.getClass() == Epic.class) {
-            ((Epic) task).getSubtasksMap().clear(); // очищается таблица подзадач, сформированный в обход менеджера
-            epics.put(task.getId(), (Epic) task);
+            Epic epic = (Epic) task;
+            epic = EpicPropertiesHelper.calculateAndSet(epic);
+            epic.getSubtasksMap().clear(); // очищается таблица подзадач, сформированный в обход менеджера
+            epics.put(epic.getId(), epic);
         } else if (task.getClass() == Subtask.class) {
             Subtask subtask = (Subtask) task;
             Epic epic = epics.get(subtask.getEpicId());
@@ -271,11 +273,14 @@ public class InMemoryTaskManager implements TaskManager {
      * @param id id объекта (задачи, эпика, подзадачи)
      */
     @Override
-    public void removeTaskOfAnyTypeById(int id) {
+    public boolean removeTaskOfAnyTypeById(int id) {
         if (tasks.containsKey(id)) {
             prioritizedTasks.remove(tasks.get(id));
+            historyManager.remove(id);
             tasks.remove(id);
-        } else if (epics.containsKey(id)) {
+            return true;
+        }
+        if (epics.containsKey(id)) {
             // удаление всех подзадач эпика из истории просмотра
             removeTasksFromHistoryByIDSet(epics.get(id).getSubtasksMap().keySet());
             // удаление всех подзадач эпика из таблицы подзадач
@@ -283,18 +288,21 @@ public class InMemoryTaskManager implements TaskManager {
                 prioritizedTasks.remove(subtasks.get(subtaskId));
                 subtasks.remove(subtaskId);
             }
+            historyManager.remove(id);
             epics.remove(id); // удаление эпика
-        } else {
-            if (subtasks.containsKey(id)) {
-                Epic epic = epics.get(subtasks.get(id).getEpicId());
-                epic.getSubtasksMap().remove(id); // удаление подзадачи из таблицы подзадач эпика
-                prioritizedTasks.remove(subtasks.get(id));
-                subtasks.remove(id); // удаление подзадачи из таблицы подзадач
-                Epic updatedEpic = EpicPropertiesHelper.calculateAndSet(epic);
-                replaceEpic(updatedEpic);
-            }
+            return true;
         }
-        historyManager.remove(id); // удаление задачи некоторого типа с заданным id также из истории просмотров
+        if (subtasks.containsKey(id)) {
+            Epic epic = epics.get(subtasks.get(id).getEpicId());
+            epic.getSubtasksMap().remove(id); // удаление подзадачи из таблицы подзадач эпика
+            prioritizedTasks.remove(subtasks.get(id));
+            historyManager.remove(id);
+            subtasks.remove(id); // удаление подзадачи из таблицы подзадач
+            Epic updatedEpic = EpicPropertiesHelper.calculateAndSet(epic);
+            replaceEpic(updatedEpic);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -310,7 +318,7 @@ public class InMemoryTaskManager implements TaskManager {
         return new ArrayList<>(prioritizedTasks);
     }
 
-    private <T extends Task> T getAnyTypeTask(int id, Map<Integer, T> tasks) {
+    protected <T extends Task> T getAnyTypeTask(int id, Map<Integer, T> tasks) {
         T task = tasks.getOrDefault(id, null);
         if (task != null) {
             historyManager.add(task);
@@ -329,8 +337,23 @@ public class InMemoryTaskManager implements TaskManager {
             return false;
         }
 
+        Task originTask;
+        if (task.getClass() == Subtask.class) {
+            originTask = subtasks.getOrDefault(task.getId(), null);
+        } else {
+            originTask = tasks.getOrDefault(task.getId(), null);
+        }
+
+        if (originTask != null) {
+            prioritizedTasks.remove(originTask);
+        }
+
         Task floorPriorityTask = prioritizedTasks.floor(task);
         Task ceilingPriorityTask = prioritizedTasks.ceiling(task);
+
+        if (originTask != null) {
+            prioritizedTasks.add(originTask);
+        }
 
         if (floorPriorityTask != null
                 && floorPriorityTask.getEndTime().isAfter(task.getStartTime())

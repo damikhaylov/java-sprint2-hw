@@ -298,9 +298,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void removeTaskOfAnyTypeById(int id) throws ManagerSaveException {
-        super.removeTaskOfAnyTypeById(id);
+    public boolean removeTaskOfAnyTypeById(int id) throws ManagerSaveException {
+        boolean isSuccessfullyRemoving = super.removeTaskOfAnyTypeById(id);
         save();
+        return isSuccessfullyRemoving;
     }
 
     @Override
