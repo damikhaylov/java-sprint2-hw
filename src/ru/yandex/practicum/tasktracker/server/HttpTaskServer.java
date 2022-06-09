@@ -1,14 +1,13 @@
-package ru.yandex.practicum.tasktracker.manager;
+package ru.yandex.practicum.tasktracker.server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import ru.yandex.practicum.tasktracker.manager.Managers;
+import ru.yandex.practicum.tasktracker.manager.TaskManager;
 import ru.yandex.practicum.tasktracker.model.Epic;
 import ru.yandex.practicum.tasktracker.model.Subtask;
 import ru.yandex.practicum.tasktracker.model.Task;
@@ -19,7 +18,6 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.OptionalInt;
@@ -28,16 +26,16 @@ import java.util.regex.Pattern;
 
 public class HttpTaskServer {
     private static final int PORT = 8080;
-    static TaskManager taskManager = Managers.getDefault();
+    private static TaskManager taskManager = Managers.getDefault();
+    private static HttpServer httpServer;
 
     public static void main(String[] args) {
         try {
-            HttpServer httpServer = HttpServer.create();
+            httpServer = HttpServer.create();
             httpServer.bind(new InetSocketAddress(PORT), 0);
             httpServer.createContext("/tasks", new TasksHandler());
             httpServer.start();
             System.out.println("HTTP-сервер запущен на " + PORT + " порту.");
-            //httpServer.stop(1); // остановка сервера
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -220,24 +218,5 @@ public class HttpTaskServer {
             return new SimpleEntry<>(201, "Задача, эпик или подзадача успешно обновлена.");
         }
         return new SimpleEntry<>(400, "Ошибка при добавлении или обновлении задачи, эпика или подзадачи.");
-    }
-}
-
-class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-
-    @Override
-    public void write(final JsonWriter jsonWriter, final LocalDateTime localDateTime) throws IOException {
-        if (localDateTime != null) {
-            jsonWriter.value(localDateTime.format(formatter));
-        } else {
-            jsonWriter.value("null");
-        }
-    }
-
-    @Override
-    public LocalDateTime read(final JsonReader jsonReader) throws IOException {
-        String value = jsonReader.nextString();
-        return (!value.equals("null")) ? LocalDateTime.parse(value, formatter) : null;
     }
 }

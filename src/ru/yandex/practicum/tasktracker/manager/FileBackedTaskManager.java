@@ -23,7 +23,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     private static final int DATA_FILE_MIN_LINES_COUNT = 2;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
-    private final File file;
+    private File file;
 
     public FileBackedTaskManager(File file, boolean isFileForReadData) {
         this.file = file;
@@ -31,6 +31,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         if (isFileForReadData && this.file.exists()) {
             load();
         }
+    }
+
+    public FileBackedTaskManager(String source) {
+        this.init(source);
+    }
+
+    protected void init(String source) {
+        this.file = new File(source);
     }
 
     /**
@@ -241,7 +249,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     /**
      * Метод добавляет задачу в историю
      */
-    private void addTaskToHistory(int id) {
+    protected void addTaskToHistory(int id) {
         if (this.epics.containsKey(id)) {
             this.historyManager.add(this.epics.get(id));
         } else if (this.subtasks.containsKey(id)) {

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.tasktracker.manager;
+package ru.yandex.practicum.tasktracker.server;
 
 import java.io.IOException;
 import java.net.URI;
@@ -10,7 +10,7 @@ import java.util.Optional;
 public class KVTaskClient {
     private final String serverUrl;
     private final HttpClient client;
-    public final String apiToken;
+    private final String apiToken;
 
     public KVTaskClient(String serverUrl) {
         this.serverUrl = serverUrl;

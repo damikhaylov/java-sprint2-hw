@@ -1,12 +1,11 @@
 package ru.yandex.practicum.tasktracker.manager;
 
-import java.io.File;
-
 public class Managers {
     public static final String DEFAULT_BACKUP_FILE_NAME = "tasks.csv";
+    public static final String DEFAULT_URL = "http://localhost:8078";
 
     public static TaskManager getDefault() {
-        return new FileBackedTaskManager(new File(DEFAULT_BACKUP_FILE_NAME), true);
+        return new HTTPTaskManager(DEFAULT_URL);
     }
 
     public static HistoryManager getDefaultHistory() {

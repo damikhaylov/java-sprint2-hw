@@ -8,6 +8,7 @@ import ru.yandex.practicum.tasktracker.manager.TaskManager;
 import ru.yandex.practicum.tasktracker.manager.TasksHelper;
 import ru.yandex.practicum.tasktracker.model.*;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -628,11 +629,51 @@ abstract class TaskManagerTest<T extends TaskManager> {
                 "Результат замены подзадачи не соответствует ожидаемому.");
     }
 
-    protected <V extends Task> void compareTasksLists(List<V> list1, List<V> list2) {
+    protected void Add2TasksAndEpicWith3Subtasks() {
+        // Создание двух задач
+        taskA = TasksHelper.replaceTaskId(taskA, taskManager.getNextTaskId());
+        taskManager.addTaskOfAnyType(taskA);
+        taskB = TasksHelper.replaceTaskId(taskB, taskManager.getNextTaskId());
+        taskManager.addTaskOfAnyType(taskB);
+
+        // Создание эпика с тремя подзадачами
+        epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
+        taskManager.addTaskOfAnyType(epicA);
+
+        subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask A", TaskStatus.NEW,
+                "Subtask A description",
+                LocalDateTime.of(2022, 6, 3, 10, 0), 15, epicA.getId());
+        taskManager.addTaskOfAnyType(subtaskA);
+        subtaskB = new Subtask(taskManager.getNextTaskId(), "Subtask B", TaskStatus.IN_PROGRESS,
+                "Subtask B description",
+                null, 15, epicA.getId());
+        taskManager.addTaskOfAnyType(subtaskB);
+        subtaskC = new Subtask(taskManager.getNextTaskId(), "Subtask C", TaskStatus.DONE,
+                "Subtask C description",
+                LocalDateTime.of(2022, 6, 3, 15, 0), 15, epicA.getId());
+        taskManager.addTaskOfAnyType(subtaskC);
+    }
+
+    protected static <V extends Task> void compareTasksLists(List<V> list1, List<V> list2) {
         assertEquals(list1.size(), list2.size(), "Размеры списка задач не совпадают.");
         for (int i = 0; i < list1.size(); i++) {
             assertEquals(list1.get(i), list2.get(i), "Элементы списка задач не совпадают.");
         }
+    }
+
+    protected static void compareManagersLists(TaskManager manager1, TaskManager manager2) {
+        compareTasksLists(manager1.getTasks(), manager2.getTasks());
+        compareTasksLists(manager1.getEpics(), manager2.getEpics());
+        compareTasksLists(manager1.getSubtasks(), manager2.getSubtasks());
+        compareTasksLists(manager1.getHistory(), manager2.getHistory());
+        compareTasksLists(manager1.getPrioritizedTasks(), manager2.getPrioritizedTasks());
+    }
+
+    protected static void noDataRecordedToManagerCheck(TaskManager manager) {
+        assertTrue(manager.getTasks().isEmpty(), "Список задач не пустой.");
+        assertTrue(manager.getEpics().isEmpty(), "Список эпиков не пустой.");
+        assertTrue(manager.getSubtasks().isEmpty(), "Список подзадач не пустой.");
+        assertTrue(manager.getHistory().isEmpty(), "Список истории не пустой.");
     }
 
     private static Stream<Arguments> nonExistentIdStreamForEmptyMap() {

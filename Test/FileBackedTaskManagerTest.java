@@ -4,11 +4,9 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.tasktracker.exeption.ManagerSaveException;
 import ru.yandex.practicum.tasktracker.manager.FileBackedTaskManager;
 import ru.yandex.practicum.tasktracker.manager.TasksHelper;
-import ru.yandex.practicum.tasktracker.model.Subtask;
-import ru.yandex.practicum.tasktracker.model.TaskStatus;
 
 import java.io.File;
-import java.time.LocalDateTime;
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,7 +33,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
 
         newTaskManager = new FileBackedTaskManager(new File(FILENAME), true);
 
-        compareManagersLists();
+        compareManagersLists(taskManager, newTaskManager);
     }
 
     @Test
@@ -43,7 +41,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
     void writeAndReadBakDataFileWithoutHistoryTest() {
         Add2TasksAndEpicWith3Subtasks();
         newTaskManager = new FileBackedTaskManager(new File(FILENAME), true);
-        compareManagersLists();
+        compareManagersLists(taskManager, newTaskManager);
         assertTrue(newTaskManager.getHistory().isEmpty(), "Список истории не пустой.");
     }
 
@@ -53,7 +51,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
         epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
         taskManager.addTaskOfAnyType(epicA);
         newTaskManager = new FileBackedTaskManager(new File(FILENAME), true);
-        compareManagersLists();
+        compareManagersLists(taskManager, newTaskManager);
         assertEquals(1, newTaskManager.getEpics().size(), "Размер списка эпиков не равен 1");
         assertTrue(newTaskManager.getSubtasks().isEmpty(), "Список подзадач не пустой.");
     }
@@ -65,15 +63,15 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
         taskManager.removeAllTasks();
         taskManager.removeAllEpics();
         newTaskManager = new FileBackedTaskManager(new File(FILENAME), true);
-        compareManagersLists();
-        noDataRecordedToManagerCheck();
+        compareManagersLists(taskManager, newTaskManager);
+        noDataRecordedToManagerCheck(newTaskManager);
     }
 
     @Test
     @DisplayName("Тест на чтение из недоступного файла")
     void readFromBadFileTest() {
         newTaskManager = new FileBackedTaskManager(new File("*?/"), true);
-        noDataRecordedToManagerCheck();
+        noDataRecordedToManagerCheck(newTaskManager);
     }
 
     @Test
@@ -92,74 +90,34 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
     @DisplayName("Тест на чтение из файла одной строкой заголовка или вообще без строк")
     void readFromOnlyHeaderOrEmptyFileTest() {
         newTaskManager = new FileBackedTaskManager(new File("only_header.csv"), true);
-        noDataRecordedToManagerCheck();
+        noDataRecordedToManagerCheck(newTaskManager);
     }
 
     @Test
     @DisplayName("Тест на чтение из файла c неверным количеством csv полей")
     void readFromWrongFieldsCountFileTest() {
         newTaskManager = new FileBackedTaskManager(new File("wrong_fields_count.csv"), true);
-        noDataRecordedToManagerCheck();
+        noDataRecordedToManagerCheck(newTaskManager);
     }
 
     @Test
     @DisplayName("Тест на чтение из файла c неверным форматом данных в полях")
     void readFromWrongDataFormatFileTest() {
         newTaskManager = new FileBackedTaskManager(new File("wrong_data_format.csv"), true);
-        noDataRecordedToManagerCheck();
+        noDataRecordedToManagerCheck(newTaskManager);
     }
 
     @Test
     @DisplayName("Тест на чтение из файла c неверной ссылкой на эпик в записи подзадачи")
     void readFromWrongEpicIdInSubtaskRecordFileTest() {
         newTaskManager = new FileBackedTaskManager(new File("wrong_epic_id.csv"), true);
-        noDataRecordedToManagerCheck();
+        noDataRecordedToManagerCheck(newTaskManager);
     }
 
     @Test
     @DisplayName("Тест на чтение из файла c неверной ссылкой на эпик в записи подзадачи")
     void readFromWrongHistoryFileTest() {
         newTaskManager = new FileBackedTaskManager(new File("wrong_history.csv"), true);
-        assertTrue(newTaskManager.getHistory().isEmpty(), "Список истории не пустой.");
-    }
-
-    public void Add2TasksAndEpicWith3Subtasks() {
-        // Создание двух задач
-        taskA = TasksHelper.replaceTaskId(taskA, taskManager.getNextTaskId());
-        taskManager.addTaskOfAnyType(taskA);
-        taskB = TasksHelper.replaceTaskId(taskB, taskManager.getNextTaskId());
-        taskManager.addTaskOfAnyType(taskB);
-
-        // Создание эпика с тремя подзадачами
-        epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
-        taskManager.addTaskOfAnyType(epicA);
-
-        subtaskA = new Subtask(taskManager.getNextTaskId(), "Subtask A", TaskStatus.NEW,
-                "Subtask A description",
-                LocalDateTime.of(2022, 6, 3, 10, 0), 15, epicA.getId());
-        taskManager.addTaskOfAnyType(subtaskA);
-        subtaskB = new Subtask(taskManager.getNextTaskId(), "Subtask B", TaskStatus.IN_PROGRESS,
-                "Subtask B description",
-                null, 15, epicA.getId());
-        taskManager.addTaskOfAnyType(subtaskB);
-        subtaskC = new Subtask(taskManager.getNextTaskId(), "Subtask C", TaskStatus.DONE,
-                "Subtask C description",
-                LocalDateTime.of(2022, 6, 3, 15, 0), 15, epicA.getId());
-        taskManager.addTaskOfAnyType(subtaskC);
-    }
-
-    private void compareManagersLists() {
-        compareTasksLists(taskManager.getTasks(), newTaskManager.getTasks());
-        compareTasksLists(taskManager.getEpics(), newTaskManager.getEpics());
-        compareTasksLists(taskManager.getSubtasks(), newTaskManager.getSubtasks());
-        compareTasksLists(taskManager.getHistory(), newTaskManager.getHistory());
-        compareTasksLists(taskManager.getPrioritizedTasks(), newTaskManager.getPrioritizedTasks());
-    }
-
-    private void noDataRecordedToManagerCheck() {
-        assertTrue(newTaskManager.getTasks().isEmpty(), "Список задач не пустой.");
-        assertTrue(newTaskManager.getEpics().isEmpty(), "Список эпиков не пустой.");
-        assertTrue(newTaskManager.getSubtasks().isEmpty(), "Список подзадач не пустой.");
         assertTrue(newTaskManager.getHistory().isEmpty(), "Список истории не пустой.");
     }
 }
