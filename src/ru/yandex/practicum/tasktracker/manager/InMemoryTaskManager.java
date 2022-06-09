@@ -337,23 +337,14 @@ public class InMemoryTaskManager implements TaskManager {
             return false;
         }
 
-        Task originTask;
-        if (task.getClass() == Subtask.class) {
-            originTask = subtasks.getOrDefault(task.getId(), null);
-        } else {
-            originTask = tasks.getOrDefault(task.getId(), null);
-        }
-
-        if (originTask != null) {
-            prioritizedTasks.remove(originTask);
-        }
-
-        // TODO Реализовать случай с исключением из проверки задачи в дереве с тем же id
         Task floorPriorityTask = prioritizedTasks.floor(task);
-        Task ceilingPriorityTask = prioritizedTasks.ceiling(task);
+        if (floorPriorityTask != null && floorPriorityTask.getId() == task.getId()) {
+            floorPriorityTask = prioritizedTasks.lower(floorPriorityTask);
+        }
 
-        if (originTask != null) {
-            prioritizedTasks.add(originTask);
+        Task ceilingPriorityTask = prioritizedTasks.ceiling(task);
+        if (ceilingPriorityTask != null && ceilingPriorityTask.getId() == task.getId()) {
+            ceilingPriorityTask = prioritizedTasks.higher(ceilingPriorityTask);
         }
 
         if (floorPriorityTask != null

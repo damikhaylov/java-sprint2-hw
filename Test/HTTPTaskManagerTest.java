@@ -24,9 +24,9 @@ public class HTTPTaskManagerTest extends TaskManagerTest<HTTPTaskManager> {
             server.start();
         } catch (IOException e) {
             System.out.println("Ошибка при запуске KV-сервера.");
+            e.printStackTrace();
         }
         taskManager = new HTTPTaskManager(URL);
-
         super.init();
     }
 
