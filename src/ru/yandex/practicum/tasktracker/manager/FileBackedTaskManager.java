@@ -29,7 +29,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         this.file = file;
 
         if (isFileForReadData && this.file.exists()) {
-            loadFromFile();
+            load();
         }
     }
 
@@ -49,113 +49,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     /**
-     * Метод формирует и возвращает строку с данными всех задач менеджера в формате csv, первая строка содержит
-     * заголовки полей
-     */
-    public String getCSVForAllTasks() {
-        List<Task> tasks = new ArrayList<>(getTasks());
-        tasks.addAll(getEpics());
-        tasks.addAll(getSubtasks());
-        StringBuilder stringBuilder = new StringBuilder(CSV_HEAD).append("\n");
-        for (Task task : tasks) {
-            stringBuilder.append(toString(task)).append("\n");
-        }
-        return stringBuilder.toString();
-    }
-
-    /**
-     * Метод формирует и возвращает строку с данными переданной в метод задачи (разделены запятыми)
-     */
-    public static String toString(Task task) {
-        return String.join(",",
-                String.valueOf(task.getId()),
-                task.getClass().getSimpleName().toUpperCase(),
-                task.getName(),
-                String.valueOf(task.getStatus()),
-                task.getDescription(),
-                ((task.getStartTime() != null) ? task.getStartTime().format(FORMATTER) : "null"),
-                String.valueOf(task.getDuration()),
-                ((task instanceof Subtask) ? String.valueOf(((Subtask) task).getEpicId()) : "")
-        );
-    }
-
-    /**
-     * Метод формирует и возвращает строку с id задач из истории просмотров, разделённых запятыми
-     */
-    public static String toString(HistoryManager manager) {
-        return manager.getHistory().stream().map(x -> String.valueOf(x.getId()))
-                .collect(Collectors.joining(","));
-    }
-
-    /**
-     * Метод создаёт и возвращает задачу (эпик, подзадачу) на основании данных, переданных в строке csv-формата
-     */
-    private Task fromString(String value) throws ManagerLoadException {
-        int id;
-        TaskType type;
-        TaskStatus status;
-        LocalDateTime startTime;
-        int duration;
-        int epicId;
-
-        String[] fields = value.split(",", -1);
-
-        if (fields.length != TASK_FIELDS_COUNT) {
-            throw new ManagerLoadException(String.format(
-                    "Некорректное число полей данных задачи ( = %d) в строке:%n%s", fields.length, value));
-        }
-
-        try {
-            id = Integer.parseInt(fields[0]);
-            type = TaskType.valueOf(fields[1]);
-            status = TaskStatus.valueOf(fields[3]);
-            startTime = (!fields[5].equals("null")) ? LocalDateTime.parse(fields[5], FORMATTER) : null;
-            duration = Integer.parseInt(fields[6]);
-            epicId = (type == TaskType.SUBTASK) ? Integer.parseInt(fields[7]) : 0;
-        } catch (IllegalArgumentException exception) {
-            throw new ManagerLoadException(String.format("Ошибка в формате данных в строке:%n%s", value), exception);
-        }
-
-        String name = fields[2];
-        String description = fields[4];
-
-        if (type == TaskType.EPIC) {
-            return new Epic(id, name, status, description, startTime, duration);
-        } else if (type == TaskType.SUBTASK) {
-            Epic epic = this.epics.getOrDefault(epicId, null);
-            if (epic == null) {
-                // Исключение будет обработано в методе loadFromFile
-                throw new ManagerLoadException(
-                        String.format("Подзадача ссылается на несуществующий эпик в строке:%n%s", value));
-            }
-            return new Subtask(id, name, status, description, startTime, duration, epicId);
-        } else {
-            return new Task(id, name, status, description, startTime, duration);
-        }
-    }
-
-    /**
-     * Метод создаёт и возвращает список с id задач из истории просмотра на основании данных, переданных
-     * в строке csv-формата
-     */
-    private static List<Integer> historyFromString(String value) throws ManagerLoadException {
-        List<Integer> historyTasksId = new ArrayList<>();
-        String[] history = value.split(",");
-        for (String id : history) {
-            try {
-                historyTasksId.add(Integer.valueOf(id));
-            } catch (NumberFormatException exception) {
-                throw new ManagerLoadException(
-                        String.format("Идентификатор задачи в истории просмотров - не целое число: %s", id), exception);
-            }
-        }
-        return historyTasksId;
-    }
-
-    /**
      * Метод создаёт и возвращает менеджер, заполняя его данными из файла формата csv
      */
-    private void loadFromFile() {
+    public void load() {
         String csv;
 
         try {
@@ -236,6 +132,110 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 this.addTaskToHistory(id);
             }
         }
+    }
+
+    /**
+     * Метод формирует и возвращает строку с данными всех задач менеджера в формате csv, первая строка содержит
+     * заголовки полей
+     */
+    private String getCSVForAllTasks() {
+        List<Task> tasks = new ArrayList<>(getTasks());
+        tasks.addAll(getEpics());
+        tasks.addAll(getSubtasks());
+        StringBuilder stringBuilder = new StringBuilder(CSV_HEAD).append("\n");
+        for (Task task : tasks) {
+            stringBuilder.append(toString(task)).append("\n");
+        }
+        return stringBuilder.toString();
+    }
+
+    /**
+     * Метод формирует и возвращает строку с данными переданной в метод задачи (разделены запятыми)
+     */
+    private static String toString(Task task) {
+        return String.join(",",
+                String.valueOf(task.getId()),
+                task.getClass().getSimpleName().toUpperCase(),
+                task.getName(),
+                String.valueOf(task.getStatus()),
+                task.getDescription(),
+                ((task.getStartTime() != null) ? task.getStartTime().format(FORMATTER) : "null"),
+                String.valueOf(task.getDuration()),
+                ((task instanceof Subtask) ? String.valueOf(((Subtask) task).getEpicId()) : "")
+        );
+    }
+
+    /**
+     * Метод формирует и возвращает строку с id задач из истории просмотров, разделённых запятыми
+     */
+    private static String toString(HistoryManager manager) {
+        return manager.getHistory().stream().map(x -> String.valueOf(x.getId()))
+                .collect(Collectors.joining(","));
+    }
+
+    /**
+     * Метод создаёт и возвращает задачу (эпик, подзадачу) на основании данных, переданных в строке csv-формата
+     */
+    private Task fromString(String value) throws ManagerLoadException {
+        int id;
+        TaskType type;
+        TaskStatus status;
+        LocalDateTime startTime;
+        int duration;
+        int epicId;
+
+        String[] fields = value.split(",", -1);
+
+        if (fields.length != TASK_FIELDS_COUNT) {
+            throw new ManagerLoadException(String.format(
+                    "Некорректное число полей данных задачи ( = %d) в строке:%n%s", fields.length, value));
+        }
+
+        try {
+            id = Integer.parseInt(fields[0]);
+            type = TaskType.valueOf(fields[1]);
+            status = TaskStatus.valueOf(fields[3]);
+            startTime = (!fields[5].equals("null")) ? LocalDateTime.parse(fields[5], FORMATTER) : null;
+            duration = Integer.parseInt(fields[6]);
+            epicId = (type == TaskType.SUBTASK) ? Integer.parseInt(fields[7]) : 0;
+        } catch (IllegalArgumentException exception) {
+            throw new ManagerLoadException(String.format("Ошибка в формате данных в строке:%n%s", value), exception);
+        }
+
+        String name = fields[2];
+        String description = fields[4];
+
+        if (type == TaskType.EPIC) {
+            return new Epic(id, name, status, description, startTime, duration);
+        } else if (type == TaskType.SUBTASK) {
+            Epic epic = this.epics.getOrDefault(epicId, null);
+            if (epic == null) {
+                // Исключение будет обработано в методе load
+                throw new ManagerLoadException(
+                        String.format("Подзадача ссылается на несуществующий эпик в строке:%n%s", value));
+            }
+            return new Subtask(id, name, status, description, startTime, duration, epicId);
+        } else {
+            return new Task(id, name, status, description, startTime, duration);
+        }
+    }
+
+    /**
+     * Метод создаёт и возвращает список с id задач из истории просмотра на основании данных, переданных
+     * в строке csv-формата
+     */
+    private static List<Integer> historyFromString(String value) throws ManagerLoadException {
+        List<Integer> historyTasksId = new ArrayList<>();
+        String[] history = value.split(",");
+        for (String id : history) {
+            try {
+                historyTasksId.add(Integer.valueOf(id));
+            } catch (NumberFormatException exception) {
+                throw new ManagerLoadException(
+                        String.format("Идентификатор задачи в истории просмотров - не целое число: %s", id), exception);
+            }
+        }
+        return historyTasksId;
     }
 
     /**
