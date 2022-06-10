@@ -1,16 +1,13 @@
 package ru.yandex.practicum.tasktracker.manager;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import ru.yandex.practicum.tasktracker.exeption.ManagerSaveException;
 import ru.yandex.practicum.tasktracker.model.Epic;
 import ru.yandex.practicum.tasktracker.model.Task;
 import ru.yandex.practicum.tasktracker.server.KVTaskClient;
-import ru.yandex.practicum.tasktracker.server.LocalDateTimeAdapter;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 
 public class HTTPTaskManager extends FileBackedTaskManager {
@@ -25,10 +22,7 @@ public class HTTPTaskManager extends FileBackedTaskManager {
     @Override
     protected void init(String source, boolean isSourceForReadData) {
         client = new KVTaskClient(source);
-        GsonBuilder gsonBuilder = new GsonBuilder()
-                .serializeNulls()
-                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
-        gson = gsonBuilder.create();
+        gson = Managers.getGson();
         if (isSourceForReadData) {
             load();
         }

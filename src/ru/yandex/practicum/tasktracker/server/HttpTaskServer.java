@@ -1,7 +1,6 @@
 package ru.yandex.practicum.tasktracker.server;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -16,7 +15,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.OptionalInt;
@@ -69,10 +67,7 @@ public class HttpTaskServer {
         server.createContext("/tasks/history", this::mapHistoryRequest);
         server.createContext("/tasks/", this::mapPriorityRequest);
 
-        GsonBuilder gsonBuilder = new GsonBuilder()
-                .serializeNulls()
-                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
-        gson = gsonBuilder.create();
+        gson = Managers.getGson();
     }
 
     public void start() {
