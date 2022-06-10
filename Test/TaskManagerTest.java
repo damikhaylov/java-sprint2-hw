@@ -8,7 +8,6 @@ import ru.yandex.practicum.tasktracker.manager.TaskManager;
 import ru.yandex.practicum.tasktracker.manager.TasksHelper;
 import ru.yandex.practicum.tasktracker.model.*;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,7 +29,6 @@ abstract class TaskManagerTest<T extends TaskManager> {
     protected Subtask subtaskC;
     protected Subtask subtaskD;
     protected List<Task> manualOrderedTasksList;
-
 
     @BeforeEach
     void init() {

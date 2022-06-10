@@ -37,7 +37,7 @@ public class HTTPTaskManager extends FileBackedTaskManager {
         client.put("epics", gson.toJson(epics));
         // TODO (Комментарий для код-ревью - удалить после спринта 7) - Поскольку gson всё равно принудительно
         //  сериализует подзадачи из внутренней HashMap каждого эпика, решено не выполнять отдельную сериализацию
-        //  общей HashMap подзадач, чтобы не дублировать данные. Восстанавливается общая HashMap подзадач также
+        //  общей HashMap подзадач, чтобы не дублировать данные. Общая HashMap подзадач восстанавливается также
         //  из данных эпиков.
         client.put("history", gson.toJson(getHistory().stream().map(Task::getId).toArray()));
     }

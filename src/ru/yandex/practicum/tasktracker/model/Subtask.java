@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class Subtask extends Task {
 
-    private int epicId;
+    private final int epicId;
 
     public Subtask(int id, String name, TaskStatus status, String description,
                    LocalDateTime startTime, int duration, int epicId) {
@@ -49,7 +49,6 @@ public class Subtask extends Task {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        Subtask subtask = (Subtask) o;
         return getEpicId() == getEpicId();
     }
 

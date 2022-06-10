@@ -21,7 +21,6 @@ public class HistoryManagerTest {
     protected Subtask subtaskA;
     List<Task> history;
 
-
     @BeforeEach
     void init() {
         historyManager = new InMemoryHistoryManager();

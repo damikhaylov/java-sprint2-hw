@@ -5,7 +5,7 @@ import java.util.*;
 
 public class Epic extends Task {
 
-    private LocalDateTime endTime;
+    private final LocalDateTime endTime;
     final private Map<Integer, Subtask> subtasksMap;
 
     public Epic(int id, String name, TaskStatus status, String description,
@@ -28,7 +28,9 @@ public class Epic extends Task {
         return endTime;
     }
 
-    public Map<Integer, Subtask> getSubtasksMap() { return subtasksMap; }
+    public Map<Integer, Subtask> getSubtasksMap() {
+        return subtasksMap;
+    }
 
     @Override
     public String toString() {

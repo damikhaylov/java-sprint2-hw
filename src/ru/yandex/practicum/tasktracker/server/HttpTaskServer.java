@@ -156,7 +156,6 @@ public class HttpTaskServer {
 
         String contentType = (responseKV.getKey() == 200) ? "application/json" : "text/plain";
         httpExchange.getResponseHeaders().set("Content-Type", contentType);
-
         httpExchange.sendResponseHeaders(responseKV.getKey(), 0);
         try (OutputStream os = httpExchange.getResponseBody()) {
             os.write(responseKV.getValue().getBytes());
