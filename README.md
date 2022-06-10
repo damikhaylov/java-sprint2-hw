@@ -1,6 +1,6 @@
 # java-sprint2-hw
 
-Финальный проект спринта 6 из раздела JavaCore 2 часть.
+Финальный проект спринта 7 из раздела JavaCore 2 часть.
 
 Проект выполнил Денис Михайлов, email: [dnmh@yandex.ru](mailto:dnmh@yandex.ru)
 
