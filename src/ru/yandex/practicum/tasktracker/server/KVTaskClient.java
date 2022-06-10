@@ -24,7 +24,9 @@ public class KVTaskClient {
         try {
             HttpRequest request = HttpRequest.newBuilder().uri(uri).POST(body).build();
             Optional<HttpResponse<String>> response = sendRequest(request);
-            if (response.isPresent() && response.get().statusCode() != 200) {
+            if (response.isEmpty()) {
+                throw new RuntimeException("KV-сервер не ответил на запрос");
+            } else if (response.get().statusCode() != 200) {
                 throw new RuntimeException("KV-сервер отклонил запрос с кодом " + response.get().statusCode());
             }
         } catch (IllegalArgumentException e) {
@@ -41,10 +43,12 @@ public class KVTaskClient {
         try {
             HttpRequest request = HttpRequest.newBuilder().uri(uri).GET().build();
             Optional<HttpResponse<String>> response = sendRequest(request);
-            if (response.isPresent() && response.get().statusCode() != 200) {
+            if (response.isEmpty()) {
+                throw new RuntimeException("KV-сервер не ответил на запрос");
+            } else if (response.get().statusCode() != 200) {
                 throw new RuntimeException("KV-сервер отклонил запрос с кодом " + response.get().statusCode());
             }
-            return (response.isPresent()) ? response.get().body() : "";
+            return response.get().body();
         } catch (IllegalArgumentException e) {
             System.out.println("Адрес KV-сервера не соответствует формату URL.");
             return "";
