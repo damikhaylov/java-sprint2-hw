@@ -28,6 +28,10 @@ public class HttpTaskServer {
     private final HttpServer server;
     private final TaskManager taskManager = Managers.getDefault();
     private final Gson gson;
+    private SimpleEntry<Integer, String> responseKV;
+    private String method;
+    private OptionalInt id;
+    private String body;
 
     // TODO (Комментарий для код-ревью - удалить после спринта 7) - Для выполнении этого задания из-за особенностей
     //  библиотеки GSON пришлось внести изменения в модель (в классы эпика и подзадачи).
@@ -57,7 +61,14 @@ public class HttpTaskServer {
 
     public HttpTaskServer() throws IOException {
         server = HttpServer.create(new InetSocketAddress(PORT), 0);
-        server.createContext("/tasks", this::mapRequests);
+
+        server.createContext("/tasks/subtask/epic/", this::mapEpicSubtasksRequest);
+        server.createContext("/tasks/task/", this::mapTaskRequest);
+        server.createContext("/tasks/epic/", this::mapEpicRequest);
+        server.createContext("/tasks/subtask/", this::mapSubtaskRequest);
+        server.createContext("/tasks/history", this::mapHistoryRequest);
+        server.createContext("/tasks/", this::mapPriorityRequest);
+
         GsonBuilder gsonBuilder = new GsonBuilder()
                 .serializeNulls()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
@@ -73,16 +84,10 @@ public class HttpTaskServer {
         server.stop(0);
     }
 
-    public void mapRequests(HttpExchange httpExchange) throws IOException {
-        SimpleEntry<Integer, String> responseKV = new SimpleEntry<>(404, "Запрашиваемый объект не найден.");
-        String method = httpExchange.getRequestMethod();
-        String path = httpExchange.getRequestURI().getPath();
-        OptionalInt id = getIdFromQuery(httpExchange.getRequestURI().getQuery());
-        InputStream inputStream = httpExchange.getRequestBody();
-        String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-
-        switch (method + " " + path) { // Сращиваем метод и путь в единую сигнатуру для упрощения условий
-            case "GET /tasks/task/":
+    public void mapTaskRequest(HttpExchange httpExchange) throws IOException {
+        initMapRequestsProperties(httpExchange);
+        switch (method) {
+            case "GET":
                 if (id.isPresent()) {
                     Task task = taskManager.getTask(id.getAsInt());
                     responseKV = (task != null)
@@ -92,10 +97,10 @@ public class HttpTaskServer {
                     responseKV = new SimpleEntry<>(200, gson.toJson(taskManager.getTasks()));
                 }
                 break;
-            case "POST /tasks/task/":
+            case "POST":
                 responseKV = postTask(body, Task.class);
                 break;
-            case "DELETE /tasks/task/":
+            case "DELETE":
                 if (id.isPresent()) {
                     responseKV = (taskManager.removeTaskOfAnyTypeById(id.getAsInt()))
                             ? new SimpleEntry<>(201, "Задача удалена.")
@@ -105,29 +110,14 @@ public class HttpTaskServer {
                     responseKV = new SimpleEntry<>(201, "Все задачи удалены.");
                 }
                 break;
-            case "GET /tasks/subtask/":
-                if (id.isPresent()) {
-                    Subtask subtask = taskManager.getSubtask(id.getAsInt());
-                    responseKV = (subtask != null) ? new SimpleEntry<>(200, gson.toJson(subtask))
-                            : new SimpleEntry<>(404, "Запрашиваемый объект не найден.");
-                } else {
-                    responseKV = new SimpleEntry<>(200, gson.toJson(taskManager.getSubtasks()));
-                }
-                break;
-            case "POST /tasks/subtask/":
-                responseKV = postTask(body, Subtask.class);
-                break;
-            case "DELETE /tasks/subtask/":
-                if (id.isPresent()) {
-                    responseKV = (taskManager.removeTaskOfAnyTypeById(id.getAsInt()))
-                            ? new SimpleEntry<>(201, "Подзадача удалена.")
-                            : new SimpleEntry<>(404, "Запрашиваемый объект не найден.");
-                } else {
-                    taskManager.removeAllSubtasks();
-                    responseKV = new SimpleEntry<>(201, "Все подзадачи удалены.");
-                }
-                break;
-            case "GET /tasks/epic/":
+        }
+        sendResponse(httpExchange);
+    }
+
+    public void mapEpicRequest(HttpExchange httpExchange) throws IOException {
+        initMapRequestsProperties(httpExchange);
+        switch (method) {
+            case "GET":
                 if (id.isPresent()) {
                     Epic epic = taskManager.getEpic(id.getAsInt());
                     responseKV = (epic != null)
@@ -137,18 +127,10 @@ public class HttpTaskServer {
                     responseKV = new SimpleEntry<>(200, gson.toJson(taskManager.getEpics()));
                 }
                 break;
-            case "GET /tasks/subtask/epic/":
-                if (id.isPresent()) {
-                    List<Subtask> subtasks = taskManager.getEpicSubtasks(id.getAsInt());
-                    responseKV = (subtasks != null)
-                            ? new SimpleEntry<>(200, gson.toJson(subtasks))
-                            : new SimpleEntry<>(404, "Запрашиваемые объекты не найдены.");
-                }
-                break;
-            case "POST /tasks/epic/":
+            case "POST":
                 responseKV = postTask(body, Epic.class);
                 break;
-            case "DELETE /tasks/epic/":
+            case "DELETE":
                 if (id.isPresent()) {
                     responseKV = (taskManager.removeTaskOfAnyTypeById(id.getAsInt()))
                             ? new SimpleEntry<>(201, "Эпик удалён.")
@@ -158,16 +140,77 @@ public class HttpTaskServer {
                     responseKV = new SimpleEntry<>(201, "Все эпики удалены.");
                 }
                 break;
-            case "GET /tasks/history/":
-                responseKV = new SimpleEntry<>(200, gson.toJson(taskManager.getHistory()));
-                break;
-            case "GET /tasks/":
-                responseKV = new SimpleEntry<>(200, gson.toJson(taskManager.getPrioritizedTasks()));
-                break;
-            default:
-                responseKV = new SimpleEntry<>(404, "Запрашиваемое действие или объект не найдены.");
         }
+        sendResponse(httpExchange);
+    }
 
+    public void mapSubtaskRequest(HttpExchange httpExchange) throws IOException {
+        initMapRequestsProperties(httpExchange);
+        switch (method) {
+            case "GET":
+                if (id.isPresent()) {
+                    Subtask subtask = taskManager.getSubtask(id.getAsInt());
+                    responseKV = (subtask != null) ? new SimpleEntry<>(200, gson.toJson(subtask))
+                            : new SimpleEntry<>(404, "Запрашиваемый объект не найден.");
+                } else {
+                    responseKV = new SimpleEntry<>(200, gson.toJson(taskManager.getSubtasks()));
+                }
+                break;
+            case "POST":
+                responseKV = postTask(body, Subtask.class);
+                break;
+            case "DELETE":
+                if (id.isPresent()) {
+                    responseKV = (taskManager.removeTaskOfAnyTypeById(id.getAsInt()))
+                            ? new SimpleEntry<>(201, "Подзадача удалена.")
+                            : new SimpleEntry<>(404, "Запрашиваемый объект не найден.");
+                } else {
+                    taskManager.removeAllSubtasks();
+                    responseKV = new SimpleEntry<>(201, "Все подзадачи удалены.");
+                }
+                break;
+        }
+        sendResponse(httpExchange);
+    }
+
+    public void mapEpicSubtasksRequest(HttpExchange httpExchange) throws IOException {
+        initMapRequestsProperties(httpExchange);
+        if (method.equals("GET") && id.isPresent()) {
+            List<Subtask> subtasks = taskManager.getEpicSubtasks(id.getAsInt());
+            responseKV = (subtasks != null)
+                    ? new SimpleEntry<>(200, gson.toJson(subtasks))
+                    : new SimpleEntry<>(404, "Запрашиваемые объекты не найдены.");
+        }
+        sendResponse(httpExchange);
+    }
+
+    public void mapHistoryRequest(HttpExchange httpExchange) throws IOException {
+        initMapRequestsProperties(httpExchange);
+        if (method.equals("GET")) {
+            responseKV = new SimpleEntry<>(200, gson.toJson(taskManager.getHistory()));
+        }
+        sendResponse(httpExchange);
+    }
+
+    public void mapPriorityRequest(HttpExchange httpExchange) throws IOException {
+        initMapRequestsProperties(httpExchange);
+        if (method.equals("GET")
+                && httpExchange.getRequestURI().getPath().equals("/tasks/")
+                && httpExchange.getRequestURI().getQuery() == null) {
+            responseKV = new SimpleEntry<>(200, gson.toJson(taskManager.getPrioritizedTasks()));
+        }
+        sendResponse(httpExchange);
+    }
+
+    private void initMapRequestsProperties(HttpExchange httpExchange) throws IOException {
+        responseKV = new SimpleEntry<>(404, "Запрашиваемое действие или объект не найдены.");
+        method = httpExchange.getRequestMethod();
+        id = getIdFromQuery(httpExchange.getRequestURI().getQuery());
+        InputStream inputStream = httpExchange.getRequestBody();
+        body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+    }
+
+    private void sendResponse(HttpExchange httpExchange) throws IOException {
         String contentType = (responseKV.getKey() == 200) ? "application/json" : "text/plain";
         httpExchange.getResponseHeaders().set("Content-Type", contentType);
         httpExchange.sendResponseHeaders(responseKV.getKey(), 0);
