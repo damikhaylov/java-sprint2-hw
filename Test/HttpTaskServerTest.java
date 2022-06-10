@@ -22,7 +22,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class HTTPTaskServerTest {
+public class HttpTaskServerTest {
     private final String URL = "http://localhost:8080";
     private KVServer kvServer;
     private HttpTaskServer taskServer;

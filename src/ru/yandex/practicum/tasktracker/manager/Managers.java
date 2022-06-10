@@ -5,7 +5,7 @@ public class Managers {
     public static final String DEFAULT_URL = "http://localhost:8078";
 
     public static TaskManager getDefault() {
-        return new HTTPTaskManager(DEFAULT_URL);
+        return new HTTPTaskManager(DEFAULT_URL, false);
     }
 
     public static HistoryManager getDefaultHistory() {

@@ -18,27 +18,30 @@ public class HTTPTaskManager extends FileBackedTaskManager {
     private KVTaskClient client;
     private Gson gson;
 
-    public HTTPTaskManager(String source) {
-        super(source);
+    public HTTPTaskManager(String source, boolean isSourceForReadData) {
+        super(source, isSourceForReadData);
     }
 
     @Override
-    protected void init(String source) {
+    protected void init(String source, boolean isSourceForReadData) {
         client = new KVTaskClient(source);
         GsonBuilder gsonBuilder = new GsonBuilder()
                 .serializeNulls()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
         gson = gsonBuilder.create();
+        if (isSourceForReadData) {
+            load();
+        }
     }
 
     @Override
     public void save() throws ManagerSaveException {
         client.put("tasks", gson.toJson(tasks));
         client.put("epics", gson.toJson(epics));
-        // TODO (Комментарий для код-ревью - удалить после спринта 7) - Поскольку gson всё равно принудительно
-        //  сериализует подзадачи из внутренней HashMap каждого эпика, решено не выполнять отдельную сериализацию
-        //  общей HashMap подзадач, чтобы не дублировать данные. Общая HashMap подзадач восстанавливается также
-        //  из данных эпиков.
+        // TODO (Комментарий для код-ревью - удалить после спринта 7) - Поскольку GSON всё равно принудительно
+        //  сериализует подзадачи из внутренней HashMap каждого эпика (подробнее - в комментарии к HttpTaskServer),
+        //  решено не выполнять отдельную сериализацию общей HashMap подзадач, чтобы не дублировать данные.
+        //  Общая HashMap подзадач восстанавливается также из данных эпиков.
         client.put("history", gson.toJson(getHistory().stream().map(Task::getId).toArray()));
     }
 

@@ -25,20 +25,15 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private File file;
 
-    public FileBackedTaskManager(File file, boolean isFileForReadData) {
-        this.file = file;
+    public FileBackedTaskManager(String source, boolean isSourceForReadData) {
+        this.init(source, isSourceForReadData);
+    }
 
-        if (isFileForReadData && this.file.exists()) {
+    protected void init(String source, boolean isSourceForReadData) {
+        this.file = new File(source);
+        if (isSourceForReadData && this.file.exists()) {
             load();
         }
-    }
-
-    public FileBackedTaskManager(String source) {
-        this.init(source);
-    }
-
-    protected void init(String source) {
-        this.file = new File(source);
     }
 
     /**

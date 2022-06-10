@@ -29,6 +29,20 @@ public class HttpTaskServer {
     private final TaskManager taskManager = Managers.getDefault();
     private final Gson gson;
 
+    // TODO (Комментарий для код-ревью - удалить после спринта 7) - Для выполнении этого задания из-за особенностей
+    //  библиотеки GSON пришлось внести изменения в модель (в классы эпика и подзадачи).
+    //  1) Ранее свойства эпиков устанавливались через сеттеры, которые при этом отсутствовали в родительском классе
+    //  Task. Это достигалось через скрытие полей родительского класса. Сериализация эпика через GSON при этом вызывала
+    //  ошибку из-за дублирования полей.
+    //  Сейчас свойства эпика устанавливаются через пересоздание объекта в конструкторе, как было рекомендовано
+    //  техзаданием изначально.
+    //  2) По результатам прошлого ревью было реализовано непосредственное хранение подзадач эпика в HashMap-свойстве
+    //  эпика. (Раньше хранились только их id). Это позволило определять свойства эпика по свойствам подзадач «внутри»
+    //  эпика. При этом каждая подзадача, в свою очередь, имела свойство, хранящее объект-родительский эпик.
+    //  Сериализация эпиков и подзадач через GSON в таких условиях приводила к Stack Overflow.
+    //  Сейчас подзадачи хранят только id родительского эпика.
+    //  Эпики при этом сериализуются и десериализуются GSON вместе с подзадачами, что учтено при реализации
+    //  HTTPTaskManager.
 
     public static void main(String[] args) {
         try {
@@ -41,15 +55,6 @@ public class HttpTaskServer {
         }
     }
 
-    public void start() {
-        server.start();
-        System.out.println("HTTP-сервер запущен на " + PORT + " порту.");
-    }
-
-    public void stop() {
-        server.stop(0);
-    }
-
     public HttpTaskServer() throws IOException {
         server = HttpServer.create(new InetSocketAddress(PORT), 0);
         server.createContext("/tasks", this::mapRequests);
@@ -57,6 +62,15 @@ public class HttpTaskServer {
                 .serializeNulls()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
         gson = gsonBuilder.create();
+    }
+
+    public void start() {
+        server.start();
+        System.out.println("HTTP-сервер запущен на " + PORT + " порту.");
+    }
+
+    public void stop() {
+        server.stop(0);
     }
 
     public void mapRequests(HttpExchange httpExchange) throws IOException {

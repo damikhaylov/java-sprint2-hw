@@ -26,7 +26,7 @@ public class HTTPTaskManagerTest extends TaskManagerTest<HTTPTaskManager> {
             System.out.println("Ошибка при запуске KV-сервера.");
             e.printStackTrace();
         }
-        taskManager = new HTTPTaskManager(URL);
+        taskManager = new HTTPTaskManager(URL, false);
         super.init();
     }
 
@@ -45,8 +45,7 @@ public class HTTPTaskManagerTest extends TaskManagerTest<HTTPTaskManager> {
         taskManager.getEpic(epicA.getId());
         taskManager.getSubtask(subtaskB.getId());
 
-        newTaskManager = new HTTPTaskManager(URL);
-        newTaskManager.load();
+        newTaskManager = new HTTPTaskManager(URL, true);
 
         compareManagersLists(taskManager, newTaskManager);
     }
@@ -55,8 +54,7 @@ public class HTTPTaskManagerTest extends TaskManagerTest<HTTPTaskManager> {
     @DisplayName("Тест на запись-считывание стандартного набора задач без истории")
     void writeAndReadBakDataFileWithoutHistoryTest() {
         Add2TasksAndEpicWith3Subtasks();
-        newTaskManager = new HTTPTaskManager(URL);
-        newTaskManager.load();
+        newTaskManager = new HTTPTaskManager(URL, true);
         compareManagersLists(taskManager, newTaskManager);
         assertTrue(newTaskManager.getHistory().isEmpty(), "Список истории не пустой.");
     }
@@ -66,8 +64,7 @@ public class HTTPTaskManagerTest extends TaskManagerTest<HTTPTaskManager> {
     void writeAndReadBakDataFileAloneEpicTest() {
         epicA = TasksHelper.replaceTaskId(epicA, taskManager.getNextTaskId());
         taskManager.addTaskOfAnyType(epicA);
-        newTaskManager = new HTTPTaskManager(URL);
-        newTaskManager.load();
+        newTaskManager = new HTTPTaskManager(URL, true);
         compareManagersLists(taskManager, newTaskManager);
         assertEquals(1, newTaskManager.getEpics().size(), "Размер списка эпиков не равен 1");
         assertTrue(newTaskManager.getSubtasks().isEmpty(), "Список подзадач не пустой.");
@@ -79,8 +76,7 @@ public class HTTPTaskManagerTest extends TaskManagerTest<HTTPTaskManager> {
         taskManager.addTaskOfAnyType(taskA);
         taskManager.removeAllTasks();
         taskManager.removeAllEpics();
-        newTaskManager = new HTTPTaskManager(URL);
-        newTaskManager.load();
+        newTaskManager = new HTTPTaskManager(URL, true);
         compareManagersLists(taskManager, newTaskManager);
         noDataRecordedToManagerCheck(newTaskManager);
     }
