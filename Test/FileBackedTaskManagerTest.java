@@ -115,7 +115,7 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
     }
 
     @Test
-    @DisplayName("Тест на чтение из файла c неверной ссылкой на эпик в записи подзадачи")
+    @DisplayName("Тест на чтение из файла c неверным форматом списка истории")
     void readFromWrongHistoryFileTest() {
         newTaskManager = new FileBackedTaskManager(new File("wrong_history.csv"), true);
         assertTrue(newTaskManager.getHistory().isEmpty(), "Список истории не пустой.");

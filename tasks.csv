@@ -1,7 +1,7 @@
 id,type,name,status,description,start,duration,epic
 1,TASK,Task A,NEW,Task A description,01.06.2022 12:45,15,
 2,TASK,Task B,IN_PROGRESS,Task B description,02.06.2022 15:15,20,
-3,EPIC,Epic A,IN_PROGRESS,Epic A description,03.06.2022 10:00,45,
+3,EPIC,Epic A,IN_PROGRESS,Epic A description,null,0,
 4,SUBTASK,Subtask A,NEW,Subtask A description,03.06.2022 10:00,15,3
 5,SUBTASK,Subtask B,IN_PROGRESS,Subtask B description,null,15,3
 6,SUBTASK,Subtask C,DONE,Subtask C description,03.06.2022 15:00,15,3

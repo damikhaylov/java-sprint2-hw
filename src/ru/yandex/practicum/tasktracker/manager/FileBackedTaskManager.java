@@ -121,6 +121,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             }
         }
 
+        for (int id : epics.keySet()) {
+            Epic updatedEpic = EpicPropertiesHelper.calculateAndSet(epics.get(id));
+            epics.replace(id, updatedEpic);
+        }
+
         int historyLineNumber = lineNumber + 1;
 
         if (historyLineNumber < lines.length) {
@@ -167,8 +172,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 task.getName(),
                 String.valueOf(task.getStatus()),
                 task.getDescription(),
-                ((task.getStartTime() != null) ? task.getStartTime().format(FORMATTER) : "null"),
-                String.valueOf(task.getDuration()),
+                ((task.getStartTime() != null && !(task instanceof Epic))
+                        ? task.getStartTime().format(FORMATTER) : "null"),
+                (!(task instanceof Epic) ? String.valueOf(task.getDuration()) : "0"),
                 ((task instanceof Subtask) ? String.valueOf(((Subtask) task).getEpicId()) : "")
         );
     }
@@ -214,7 +220,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         String description = fields[4];
 
         if (type == TaskType.EPIC) {
-            return new Epic(id, name, status, description, startTime, duration, null);
+            return new Epic(id, name, status, description, null, 0, null);
         } else if (type == TaskType.SUBTASK) {
             Epic epic = this.epics.getOrDefault(epicId, null);
             if (epic == null) {
