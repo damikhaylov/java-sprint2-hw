@@ -8,26 +8,24 @@ public class Epic extends Task {
     private LocalDateTime endTime;
     final private Map<Integer, Subtask> subtasksMap;
 
-    public Epic(int id, String name, TaskStatus status, String description, LocalDateTime startTime, int duration) {
+    public Epic(int id, String name, TaskStatus status, String description,
+                LocalDateTime startTime, int duration, LocalDateTime endTime) {
         super(id, name, status, description, startTime, duration);
         subtasksMap = new HashMap<>();
+        this.endTime = endTime;
     }
 
     public Epic(int id, String name, String description) {
-        this(id, name, TaskStatus.NEW, description, null, 0);
+        this(id, name, TaskStatus.NEW, description, null, 0, null);
     }
 
     public Epic(String name, String description) {
-        this(DEFAULT_ID, name, TaskStatus.NEW, description, null, 0);
+        this(DEFAULT_ID, name, TaskStatus.NEW, description, null, 0, null);
     }
 
     @Override
     public LocalDateTime getEndTime() {
         return endTime;
-    }
-
-    public void setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
     }
 
     public Map<Integer, Subtask> getSubtasksMap() { return subtasksMap; }

@@ -17,7 +17,7 @@ public class TasksHelper {
 
     public static Epic replaceTaskId(Epic epic, int id) {
         return new Epic(id, epic.getName(), epic.getStatus(), epic.getDescription(),
-                epic.getStartTime(), epic.getDuration());
+                epic.getStartTime(), epic.getDuration(), epic.getEndTime());
     }
 
     public static Subtask replaceTaskId(Subtask subtask, int id) {

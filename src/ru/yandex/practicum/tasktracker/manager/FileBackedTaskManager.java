@@ -214,7 +214,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         String description = fields[4];
 
         if (type == TaskType.EPIC) {
-            return new Epic(id, name, status, description, startTime, duration);
+            return new Epic(id, name, status, description, startTime, duration, null);
         } else if (type == TaskType.SUBTASK) {
             Epic epic = this.epics.getOrDefault(epicId, null);
             if (epic == null) {

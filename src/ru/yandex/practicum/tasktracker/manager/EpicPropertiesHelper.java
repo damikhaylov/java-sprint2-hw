@@ -20,7 +20,7 @@ public class EpicPropertiesHelper {
         Epic updatedEpic;
         if (epic.getSubtasksMap() == null || epic.getSubtasksMap().size() == 0) {
             return new Epic(epic.getId(), epic.getName(), TaskStatus.NEW, epic.getDescription(),
-                    epic.getStartTime(), epic.getDuration());
+                    epic.getStartTime(), epic.getDuration(), epic.getEndTime());
         }
         TaskStatus newStatus = null;
         for (Subtask subtask : epic.getSubtasksMap().values()) {
@@ -37,7 +37,7 @@ public class EpicPropertiesHelper {
             }
         }
         updatedEpic = new Epic(epic.getId(), epic.getName(), newStatus, epic.getDescription(),
-                epic.getStartTime(), epic.getDuration());
+                epic.getStartTime(), epic.getDuration(), epic.getEndTime());
         updatedEpic.getSubtasksMap().putAll(epic.getSubtasksMap());
         return updatedEpic;
     }
@@ -49,8 +49,7 @@ public class EpicPropertiesHelper {
         Epic updatedEpic;
         if (epic.getSubtasksMap() == null || epic.getSubtasksMap().size() == 0) {
             updatedEpic = new Epic(epic.getId(), epic.getName(), epic.getStatus(), epic.getDescription(),
-                    null, 0);
-            updatedEpic.setEndTime(null);
+                    null, 0, null);
             return updatedEpic;
         }
 
@@ -82,8 +81,7 @@ public class EpicPropertiesHelper {
             }
         }
         updatedEpic = new Epic(epic.getId(), epic.getName(), epic.getStatus(), epic.getDescription(),
-                startTime, duration);
-        updatedEpic.setEndTime(endTime);
+                startTime, duration, endTime);
         updatedEpic.getSubtasksMap().putAll(epic.getSubtasksMap());
         return updatedEpic;
     }
