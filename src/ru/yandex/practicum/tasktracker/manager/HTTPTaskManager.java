@@ -32,10 +32,6 @@ public class HTTPTaskManager extends FileBackedTaskManager {
     public void save() throws ManagerSaveException {
         client.put("tasks", gson.toJson(tasks));
         client.put("epics", gson.toJson(epics));
-        // TODO (Комментарий для код-ревью - удалить после спринта 7) - Поскольку GSON всё равно принудительно
-        //  сериализует подзадачи из внутренней HashMap каждого эпика (подробнее - в комментарии к HttpTaskServer),
-        //  решено не выполнять отдельную сериализацию общей HashMap подзадач, чтобы не дублировать данные.
-        //  Общая HashMap подзадач восстанавливается также из данных эпиков.
         client.put("history", gson.toJson(getHistory().stream().map(Task::getId).toArray()));
     }
 
